@@ -63,10 +63,42 @@
             transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
+        /* 表格容器样式 */
+        .table-container {
+            position: relative;
+            max-height: max(70vh,40rem);
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            /* 自定义滚动条样式 */
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+
+        /* Webkit浏览器的滚动条样式 */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 0;
         }
 
         th {
@@ -74,6 +106,11 @@
             color: white;
             font-weight: bold;
             transition: background-color 0.3s ease;
+            position: sticky;
+            top: var(--th-top);
+            z-index: 10;
+            border-bottom: 2px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         td,
@@ -128,8 +165,32 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
         }
 
+        .dark-mode table {
+            background-color: #2d2d2d !important;
+        }
+
+        .dark-mode .table-container {
+            border-color: #555 !important;
+            scrollbar-color: #555 #2d2d2d;
+        }
+
+        .dark-mode .table-container::-webkit-scrollbar-track {
+            background: #2d2d2d !important;
+        }
+
+        .dark-mode .table-container::-webkit-scrollbar-thumb {
+            background: #555 !important;
+        }
+
+        .dark-mode .table-container::-webkit-scrollbar-thumb:hover {
+            background: #666 !important;
+        }
+
         .dark-mode th {
             background-color: #1976d2 !important;
+            border-bottom: 2px solid #1976d2 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+            border-color: #555 !important;
         }
 
         .dark-mode tr:nth-child(even) {
@@ -146,10 +207,6 @@
         }
 
         .dark-mode td {
-            border-color: #555 !important;
-        }
-
-        .dark-mode th {
             border-color: #555 !important;
         }
 
@@ -331,6 +388,22 @@
             
             .user-nickname-input {
                 width: 80px;
+            }
+            
+            /* 移动设备表格优化 */
+            .table-container {
+                max-height: max(60vh,40rem);
+                font-size: 12px;
+            }
+            
+            .table-container th,
+            .table-container td {
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+            
+            .card {
+                padding: 15px;
             }
         }
 
@@ -574,55 +647,57 @@
         <div id="dpsChart" style="width: 100%; height: 350px;"></div>
     </div>
 
-    <div class="card">
-        <!-- 数据组显示控制 -->
-        <div class="data-group-controls">
-            <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">
-                ⚔️ 伤害&DPS
-            </button>
-            <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">
-                ❤️ 治疗&HPS
-            </button>
-            <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">
-                📊 全部数据
-            </button>
+            <div class="card">
+            <!-- 数据组显示控制 -->
+            <div class="data-group-controls">
+                <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">
+                    ⚔️ 伤害&DPS
+                </button>
+                <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">
+                    ❤️ 治疗&HPS
+                </button>
+                <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">
+                    📊 全部数据
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="damageTable">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" title="角色唯一标识符">角色ID</th>
+                            <th rowspan="2" title="角色昵称/自定义昵称">角色昵称</th>
+                            <th rowspan="2" title="角色职业">职业</th>
+                            <th rowspan="2" title="角色在战斗中受到的伤害">承伤</th>
+                            <th rowspan="2" title="角色在战斗中的暴击触发率">暴击率</th>
+                            <th rowspan="2" title="角色在战斗中的幸运触发率">幸运率</th>
+                            <th class="damage-main-col" colspan="4">伤害</th>
+                            <th class="damage-simple-col" style="display: none;" colspan="1">伤害</th>
+                            <th class="dps-col" colspan="3">DPS</th>
+                            <th class="healing-main-col" colspan="4">治疗</th>
+                            <th class="healing-simple-col" style="display: none;" colspan="1">治疗</th>
+                            <th class="hps-col" colspan="3">HPS</th>
+                        </tr>
+                        <tr>
+                            <th class="damage-cols" title="角色在战斗中造成的总伤害">总伤害</th>
+                            <th class="damage-detail-cols" title="角色在战斗中造成的非幸运的暴击伤害">纯暴击</th>
+                            <th class="damage-detail-cols" title="角色在战斗中造成的非暴击的幸运伤害">纯幸运</th>
+                            <th class="damage-detail-cols" title="角色在战斗中造成的暴击的幸运伤害">暴击幸运</th>
+                            <th class="dps-cols" title="角色在战斗中的最近一秒造成的伤害">瞬时DPS</th>
+                            <th class="dps-cols" title="角色在战斗中的最大瞬时DPS">最大瞬时</th>
+                            <th class="dps-cols" title="角色在战斗中的总DPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">总DPS</th>
+                            <th class="healing-cols" title="角色在战斗中造成的总治疗量">总治疗</th>
+                            <th class="healing-detail-cols" title="角色在战斗中造成的非幸运的暴击治疗量">纯暴击</th>
+                            <th class="healing-detail-cols" title="角色在战斗中造成的非暴击的幸运治疗量">纯幸运</th>
+                            <th class="healing-detail-cols" title="角色在战斗中造成的暴击的幸运治疗量">暴击幸运</th>
+                            <th class="hps-cols" title="角色在战斗中的最近一秒造成的伤害和治疗量">瞬时HPS</th>
+                            <th class="hps-cols" title="角色在战斗中的最大瞬时HPS">最大瞬时</th>
+                            <th class="hps-cols" title="角色在战斗中的总HPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">总HPS</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
-        <table id="damageTable">
-            <thead>
-                <tr>
-                    <th rowspan="2" title="角色唯一标识符">角色ID</th>
-                    <th rowspan="2" title="角色昵称/自定义昵称">角色昵称</th>
-                    <th rowspan="2" title="角色职业">职业</th>
-                    <th rowspan="2" title="角色在战斗中受到的伤害">承伤</th>
-                    <th rowspan="2" title="角色在战斗中的暴击触发率">暴击率</th>
-                    <th rowspan="2" title="角色在战斗中的幸运触发率">幸运率</th>
-                    <th class="damage-main-col" colspan="4">伤害</th>
-                    <th class="damage-simple-col" style="display: none;" colspan="1">伤害</th>
-                    <th class="dps-col" colspan="3">DPS</th>
-                    <th class="healing-main-col" colspan="4">治疗</th>
-                    <th class="healing-simple-col" style="display: none;" colspan="1">治疗</th>
-                    <th class="hps-col" colspan="3">HPS</th>
-                </tr>
-                <tr>
-                    <th class="damage-cols" title="角色在战斗中造成的总伤害">总伤害</th>
-                    <th class="damage-detail-cols" title="角色在战斗中造成的非幸运的暴击伤害">纯暴击</th>
-                    <th class="damage-detail-cols" title="角色在战斗中造成的非暴击的幸运伤害">纯幸运</th>
-                    <th class="damage-detail-cols" title="角色在战斗中造成的暴击的幸运伤害">暴击幸运</th>
-                    <th class="dps-cols" title="角色在战斗中的最近一秒造成的伤害">瞬时DPS</th>
-                    <th class="dps-cols" title="角色在战斗中的最大瞬时DPS">最大瞬时</th>
-                    <th class="dps-cols" title="角色在战斗中的总DPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">总DPS</th>
-                    <th class="healing-cols" title="角色在战斗中造成的总治疗量">总治疗</th>
-                    <th class="healing-detail-cols" title="角色在战斗中造成的非幸运的暴击治疗量">纯暴击</th>
-                    <th class="healing-detail-cols" title="角色在战斗中造成的非暴击的幸运治疗量">纯幸运</th>
-                    <th class="healing-detail-cols" title="角色在战斗中造成的暴击的幸运治疗量">暴击幸运</th>
-                    <th class="hps-cols" title="角色在战斗中的最近一秒造成的伤害和治疗量">瞬时HPS</th>
-                    <th class="hps-cols" title="角色在战斗中的最大瞬时HPS">最大瞬时</th>
-                    <th class="hps-cols" title="角色在战斗中的总HPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">总HPS</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
 
     <div class="watermark"></div>
 
@@ -1870,6 +1945,16 @@
             document.addEventListener('DOMContentLoaded', initialize);
         } else {
             initialize();
+        }
+    </script>
+    <script>
+        window.onload = function(){
+        const damageTable = document.getElementById('damageTable');
+        const damageTableRows = damageTable.querySelectorAll('tr');
+        damageTableRows.forEach((row, index) => {
+                const height = row.offsetHeight;
+                row.style.setProperty('--th-top', `${index * height}px`);
+            });
         }
     </script>
 </body>
