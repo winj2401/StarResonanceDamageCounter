@@ -1046,6 +1046,23 @@
         
         // 渲染技能图表
         function renderSkillCharts(skillIds, damages, critRates, luckyRates) {
+            const topNames   = skillIds.slice(0, 5);
+            const topDamages = damages.slice(0, 5);
+            
+            // 构造前 5 的 data，并且都显示标签
+            const pieData = topNames.map((name, idx) => ({
+                value: topDamages[idx],
+                name: name,
+                label: {
+                    show: true,          // 打开这一项的标签
+                    position: 'outside', // 放到扇区外侧
+                    formatter: '{b}\n{d}%'// 显示“名称 + 百分比”
+                },
+                labelLine: {
+                    show: true           // 显示引导线
+                }
+            }));
+
             // 销毁现有图表
             if (skillChart1) skillChart1.dispose();
             if (skillChart2) skillChart2.dispose();
@@ -1099,10 +1116,7 @@
                     labelLine: {
                         show: false
                     },
-                    data: skillIds.map((name, index) => ({
-                        value: damages[index],
-                        name: name
-                    }))
+                    data: pieData
                 }]
             };
             

@@ -984,6 +984,18 @@
       "element": "wind",
       "description": "飓风哥布林战士"
     },
+    "3210021": {
+      "name": "奥义！ 流星陨落",
+      "type": "damage",
+      "element": "wind",
+      "description": "飓风哥布林王"
+    },
+    "2002853": {
+      "name": "绝技！ 碎星陨落",
+      "type": "damage",
+      "element": "wind",
+      "description": "火焰哥布林巫师"
+    },
     "1222": {
       "name": "幻影冲锋",
       "type": "damage",
