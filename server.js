@@ -278,6 +278,31 @@ class UserData {
         };
     }
 
+    /** 获取技能统计数据 */
+    getSkillSummary() {
+        const skills = {};
+        for (const [skillId, stat] of this.skillUsage) {
+        const total = stat.stats.normal + stat.stats.critical + 
+                    stat.stats.lucky + stat.stats.crit_lucky;
+        const critCount = stat.count.critical + stat.count.crit_lucky;
+        const luckyCount = stat.count.lucky + stat.count.crit_lucky;
+        const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
+        const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
+        
+        skills[skillId] = {
+            totalDamage: stat.stats.total,
+            totalCount: stat.count.total,
+            critCount: stat.count.critical + stat.count.crit_lucky,
+            luckyCount: stat.count.lucky + stat.count.crit_lucky,
+            critRate: critRate,
+            luckyRate: luckyRate,
+            damageBreakdown: { ...stat.stats },
+            countBreakdown: { ...stat.count }
+        };
+        }
+        return skills;
+    }
+
     /** 设置姓名
      * @param {string} name - 姓名
      * */
@@ -385,6 +410,19 @@ class UserDataManager {
         for (const user of this.users.values()) {
             user.updateRealtimeDps();
         }
+    }
+
+    /** 获取用户的技能数据 */
+    getUserSkillData(uid) {
+        const user = this.users.get(uid);
+        if (!user) return null;
+        
+        return {
+        uid: user.uid,
+        name: user.name,
+        profession: user.profession,
+        skills: user.getSkillSummary()
+        };
     }
 
     /** 获取所有用户数据 */
@@ -515,6 +553,24 @@ async function main() {
         res.json({
             code: 0,
             paused: isPaused
+        });
+    });
+
+    // 获取技能数据
+    app.get('/api/skill/:uid', (req, res) => {
+        const uid = parseInt(req.params.uid);
+        const skillData = userDataManager.getUserSkillData(uid);
+        
+        if (!skillData) {
+            return res.status(404).json({
+            code: 1,
+            msg: 'User not found'
+            });
+        }
+        
+        res.json({
+            code: 0,
+            data: skillData
         });
     });
 

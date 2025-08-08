@@ -302,6 +302,214 @@
             background-color: #1976d2;
         }
 
+        /* 新增技能按钮样式 */
+        .skill-btn {
+            padding: 6px 12px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .skill-btn:hover {
+            background: linear-gradient(45deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* 技能统计弹窗样式 */
+        .skill-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .skill-modal-content {
+            background-color: #2d3748;
+            margin: 5% auto;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 1000px;
+            max-height: 85vh;
+            overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .skill-modal-header {
+            background: linear-gradient(45deg, #2c3e50, #1a2a6c);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .skill-modal-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .skill-modal-close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+        
+        .skill-modal-close:hover {
+            color: #ff6b6b;
+        }
+        
+        .skill-modal-body {
+            padding: 25px;
+            max-height: calc(85vh - 110px); 
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        
+        .skill-user-info {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .skill-user-info-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .skill-user-info-label {
+            color: #a0aec0;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .skill-user-info-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .skill-stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+        }
+        
+        .skill-chart-container {
+            height: 350px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .skill-table-container {
+            overflow-x: auto;
+        }
+        
+        .skill-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .skill-table th {
+            background: rgba(44, 62, 80, 0.7);
+            color: #e2e8f0;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .skill-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e0;
+        }
+        
+        .skill-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .skill-table tr:hover td {
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .skill-crit {
+            color: #ff9966;
+            font-weight: 600;
+        }
+        
+        .skill-lucky {
+            color: #93f9b9;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .progress-damage {
+            background: linear-gradient(90deg, #ff5e62, #ff9966);
+        }
+        
+        .progress-crit {
+            background: linear-gradient(90deg, #ff9966, #ffcc00);
+        }
+        
+        .progress-lucky {
+            background: linear-gradient(90deg, #93f9b9, #1d976c);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
         /* 移动设备响应式设计 */
         @media (max-width: 768px) {
             .modal-content {
@@ -560,6 +768,63 @@
         </div>
     </div>
 
+    <!-- 技能统计弹窗 -->
+    <div id="skillModal" class="skill-modal">
+        <div class="skill-modal-content">
+            <div class="skill-modal-header">
+                <h2 class="skill-modal-title">
+                    <i class="icon">📊</i> 
+                    <span id="skillUserName">技能参与统计</span>
+                </h2>
+                <span class="skill-modal-close" onclick="closeSkillModal()">&times;</span>
+            </div>
+            <div class="skill-modal-body">
+                <div class="skill-user-info">
+                    <div class="skill-user-info-item">
+                        <div class="skill-user-info-label">用户ID</div>
+                        <div class="skill-user-info-value" id="skillUserId">-</div>
+                    </div>
+                    <div class="skill-user-info-item">
+                        <div class="skill-user-info-label">角色昵称</div>
+                        <div class="skill-user-info-value" id="skillUserNickname">-</div>
+                    </div>
+                    <div class="skill-user-info-item">
+                        <div class="skill-user-info-label">职业</div>
+                        <div class="skill-user-info-value" id="skillUserProfession">-</div>
+                    </div>
+                    <div class="skill-user-info-item">
+                        <div class="skill-user-info-label">技能数量</div>
+                        <div class="skill-user-info-value" id="skillCount">-</div>
+                    </div>
+                </div>
+                
+                <div class="skill-stats-container">
+                    <div class="skill-chart-container" id="skillDamageChart"></div>
+                    <div class="skill-chart-container" id="skillCritChart"></div>
+                </div>
+                
+                <div class="skill-table-container">
+                    <table class="skill-table" id="skillTable">
+                        <thead>
+                            <tr>
+                                <th>技能ID</th>
+                                <th>总伤害</th>
+                                <th>使用次数</th>
+                                <th>暴击率</th>
+                                <th>幸运率</th>
+                                <th>暴击伤害</th>
+                                <th>幸运伤害</th>
+                                <th>暴击幸运</th>
+                                <th>普通伤害</th>
+                            </tr>
+                        </thead>
+                        <tbody id="skillTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 服务器状态提示 -->
     <div id="serverStatus" class="server-status">
         <span id="serverStatusText">连接中...</span>
@@ -602,6 +867,7 @@
                     <th class="healing-main-col" colspan="4">治疗</th>
                     <th class="healing-simple-col" style="display: none;" colspan="1">治疗</th>
                     <th class="hps-col" colspan="3">HPS</th>
+                    <th rowspan="2">技能分析</th>
                 </tr>
                 <tr>
                     <th class="damage-cols" title="角色在战斗中造成的总伤害">总伤害</th>
@@ -668,6 +934,236 @@
         // 数据组显示控制相关变量
         let currentDataGroup = 'damage';
         let lastVisiableUserArray = [];
+
+        // 新增技能分析功能
+        let skillChart1 = null;
+        let skillChart2 = null;
+        let currentSkillUserId = 0;
+        
+        // 显示技能分析弹窗
+        async function showSkillAnalysis(userId) {
+            currentSkillUserId = userId;
+            const modal = document.getElementById('skillModal');
+            modal.style.display = 'block';
+            
+            // 获取技能数据
+            await fetchSkillData(userId);
+        }
+        
+        // 关闭技能弹窗
+        function closeSkillModal() {
+            const modal = document.getElementById('skillModal');
+            modal.style.display = 'none';
+            
+            // 销毁图表实例
+            if (skillChart1) {
+                skillChart1.dispose();
+                skillChart1 = null;
+            }
+            if (skillChart2) {
+                skillChart2.dispose();
+                skillChart2 = null;
+            }
+        }
+        
+        // 点击弹窗外部区域关闭弹窗
+        window.onclick = function(event) {
+            const modal = document.getElementById('skillModal');
+            if (event.target === modal) {
+                closeSkillModal();
+            }
+        }
+        
+        // 获取技能数据
+        async function fetchSkillData(userId) {
+            try {
+                const response = await fetch(`/api/skill/${userId}`);
+                const data = await response.json();
+                
+                if (data.code === 0) {
+                    renderSkillData(data.data);
+                } else {
+                    console.error('获取技能数据失败:', data.msg);
+                }
+            } catch (error) {
+                console.error('获取技能数据失败:', error);
+            }
+        }
+        
+        // 渲染技能数据
+        function renderSkillData(skillData) {
+            // 更新用户信息
+            document.getElementById('skillUserId').textContent = skillData.uid;
+            document.getElementById('skillUserName').textContent = 
+                `${skillData.name || '未知玩家' } - 技能参与统计`;
+            document.getElementById('skillUserNickname').textContent = skillData.name;
+            document.getElementById('skillUserProfession').textContent = skillData.profession;
+            document.getElementById('skillCount').textContent = 
+                Object.keys(skillData.skills).length;
+            
+            // 准备图表数据
+            const skills = Object.entries(skillData.skills);
+            const skillIds = skills.map(([id]) => id);
+            const damages = skills.map(([, data]) => data.totalDamage);
+            const critRates = skills.map(([, data]) => data.critRate * 100);
+            const luckyRates = skills.map(([, data]) => data.luckyRate * 100);
+            
+            // 渲染表格
+            const tableBody = document.getElementById('skillTableBody');
+            tableBody.innerHTML = '';
+            
+            skills.forEach(([skillId, skill]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${skillId}</td>
+                    <td>${skill.totalDamage.toLocaleString()}</td>
+                    <td>${skill.totalCount}</td>
+                    <td class="skill-crit">${(skill.critRate * 100).toFixed(2)}%</td>
+                    <td class="skill-lucky">${(skill.luckyRate * 100).toFixed(2)}%</td>
+                    <td>${skill.damageBreakdown.critical.toLocaleString()}</td>
+                    <td>${skill.damageBreakdown.lucky.toLocaleString()}</td>
+                    <td>${skill.damageBreakdown.crit_lucky.toLocaleString()}</td>
+                    <td>${skill.damageBreakdown.normal.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // 渲染图表
+            renderSkillCharts(skillIds, damages, critRates, luckyRates);
+        }
+        
+        // 渲染技能图表
+        function renderSkillCharts(skillIds, damages, critRates, luckyRates) {
+            // 销毁现有图表
+            if (skillChart1) skillChart1.dispose();
+            if (skillChart2) skillChart2.dispose();
+            
+            // 创建新的图表实例
+            skillChart1 = echarts.init(document.getElementById('skillDamageChart'));
+            skillChart2 = echarts.init(document.getElementById('skillCritChart'));
+            
+            // 技能伤害分布图
+            const damageOption = {
+                title: {
+                    text: '技能伤害分布',
+                    left: 'center',
+                    textStyle: { color: '#e2e8f0' }
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)',
+                    backgroundColor: 'rgba(40, 40, 60, 0.9)',
+                    borderColor: '#3498db',
+                    textStyle: { color: '#ecf0f1' }
+                },
+                legend: {
+                    orient: 'vertical',
+                    right: 10,
+                    top: 'center',
+                    textStyle: { color: '#cbd5e0' }
+                },
+                series: [{
+                    name: '技能伤害',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#1a2a6c',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '16',
+                            fontWeight: 'bold',
+                            color: '#e2e8f0'
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: skillIds.map((id, index) => ({
+                        value: damages[index],
+                        name: `技能 ${id}`
+                    }))
+                }]
+            };
+            
+            // 暴击率/幸运率对比图
+            const critOption = {
+                title: {
+                    text: '暴击率与幸运率',
+                    left: 'center',
+                    textStyle: { color: '#e2e8f0' }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    backgroundColor: 'rgba(40, 40, 60, 0.9)',
+                    borderColor: '#3498db',
+                    textStyle: { color: '#ecf0f1' }
+                },
+                legend: {
+                    data: ['暴击率', '幸运率'],
+                    bottom: 10,
+                    textStyle: { color: '#cbd5e0' }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    top: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: skillIds.map(id => `技能 ${id}`),
+                    axisLine: { lineStyle: { color: '#7f8c8d' } },
+                    axisLabel: { 
+                        color: '#95a5a6',
+                        interval: 0,
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '百分比',
+                    min: 0,
+                    max: 100,
+                    axisLine: { lineStyle: { color: '#7f8c8d' } },
+                    axisLabel: { color: '#95a5a6' },
+                    splitLine: { lineStyle: { color: 'rgba(127, 140, 141, 0.2)' } }
+                },
+                series: [
+                    {
+                        name: '暴击率',
+                        type: 'bar',
+                        data: critRates,
+                        itemStyle: { color: '#ff9966' }
+                    },
+                    {
+                        name: '幸运率',
+                        type: 'bar',
+                        data: luckyRates,
+                        itemStyle: { color: '#93f9b9' }
+                    }
+                ]
+            };
+            
+            skillChart1.setOption(damageOption);
+            skillChart2.setOption(critOption);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                skillChart1.resize();
+                skillChart2.resize();
+            });
+        }
         
         // 多用户性能优化配置
         const CHART_CONFIG = {
@@ -873,6 +1369,9 @@
         // 处理数据更新（WebSocket和API通用）
         function processDataUpdate(data) {
             try {
+                const damageTable = document.getElementById('damageTable').querySelector('tbody');
+                damageTable.innerHTML = '';
+                
                 // 将数据转换为数组以便排序
                 const userArray = Object.keys(data.user).map(id => ({
                     id: Number(id),
@@ -911,39 +1410,39 @@
                 console.error('处理数据更新失败：', err);
             }
         }
-
-        // 生成表格行
+                
+                // 生成表格行
         function updateTables(visibleUserArray) {
             const damageTable = document.getElementById('damageTable').querySelector('tbody');
             damageTable.innerHTML = '';
-            for (const user of visibleUserArray) {
-                const crit_rate = user.total_count.critical / user.total_count.total;
-                const lucky_rate = user.total_count.lucky / user.total_count.total;
-                
-                const row = document.createElement('tr');
-                
-                // 角色ID列
-                const uidCell = document.createElement('td');
+                for (const user of visibleUserArray) {
+                    const crit_rate = user.total_count.critical / user.total_count.total;
+                    const lucky_rate = user.total_count.lucky / user.total_count.total;
+                    
+                    const row = document.createElement('tr');
+                    
+                    // 角色ID列
+                    const uidCell = document.createElement('td');
                 uidCell.textContent = `${user.id}`;
-                row.appendChild(uidCell);
-                
-                // 角色昵称列
-                const nicknameCell = document.createElement('td');
-                // Check if user.name is a non-empty string
-                const hasValidName = user.name && user.name.trim() !== '';
-                const nickname = userNicknames[user.id] || (hasValidName ? user.name : '');
-                
-                nicknameCell.textContent = nickname;
-                row.appendChild(nicknameCell);
-                
-                const isSimpleMode = document.body.classList.contains('simple-mode');
-                
-                // 其他数据列
-                const otherCells = [
-                    user.profession || '未知',
-                    user.taken_damage,
-                    `${(crit_rate * 100).toFixed(2)}%`,
-                    `${(lucky_rate * 100).toFixed(2)}%`,
+                    row.appendChild(uidCell);
+                    
+                    // 角色昵称列
+                    const nicknameCell = document.createElement('td');
+                    // Check if user.name is a non-empty string
+                    const hasValidName = user.name && user.name.trim() !== '';
+                    const nickname = userNicknames[user.id] || (hasValidName ? user.name : '');
+                    
+                    nicknameCell.textContent = nickname;
+                    row.appendChild(nicknameCell);
+                    
+                    const isSimpleMode = document.body.classList.contains('simple-mode');
+                    
+                    // 其他数据列
+                    const otherCells = [
+                        user.profession || '未知',
+                        user.taken_damage,
+                        `${(crit_rate * 100).toFixed(2)}%`,
+                        `${(lucky_rate * 100).toFixed(2)}%`,
                 ];
                 if (currentDataGroup === 'damage' || currentDataGroup === 'all') {
                     otherCells.push(user.total_damage.total);
@@ -975,15 +1474,23 @@
                         user.total_hps.toFixed(2),
                     );
                 }
-                
-                otherCells.forEach(cellData => {
-                    const cell = document.createElement('td');
-                    cell.textContent = cellData;
-                    row.appendChild(cell);
-                });
-                
-                damageTable.appendChild(row);
-            }
+                    
+                    otherCells.forEach(cellData => {
+                        const cell = document.createElement('td');
+                        cell.textContent = cellData;
+                        row.appendChild(cell);
+                    });
+
+                    const skillCell = document.createElement('td');
+                    const skillButton = document.createElement('button');
+                    skillButton.className = 'skill-btn';
+                    skillButton.innerHTML = '<i class="icon">📊</i> 技能参与';
+                    skillButton.onclick = () => showSkillAnalysis(user.id);
+                    skillCell.appendChild(skillButton);
+                    row.appendChild(skillCell);
+                    
+                    damageTable.appendChild(row);
+                }
         }
 
         async function fetchData() {
@@ -1266,7 +1773,7 @@
                 dpsHistory[user.id] = dpsHistory[user.id].filter(point => point.time > cutoffTime);
             }
         }
-        
+
         // 初始化ECharts图表
         function initChart() {
             const chartDom = document.getElementById('dpsChart');
