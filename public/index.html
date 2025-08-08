@@ -1000,22 +1000,29 @@
             document.getElementById('skillUserProfession').textContent = skillData.profession;
             document.getElementById('skillCount').textContent = 
                 Object.keys(skillData.skills).length;
-            
-            // 准备图表数据
+
+            // 把对象转数组并排序
             const skills = Object.entries(skillData.skills);
-            const skillIds = skills.map(([id]) => id);
-            const damages = skills.map(([, data]) => data.totalDamage);
-            const critRates = skills.map(([, data]) => data.critRate * 100);
-            const luckyRates = skills.map(([, data]) => data.luckyRate * 100);
+            const sortedSkills = skills.slice().sort(([, a], [, b]) => b.totalDamage - a.totalDamage);
+
+            // 为图表准备三组数据
+            const skillNames = [];  // 用来存 displayName
+            const damages    = [];
+            const critRates  = [];
+            const luckyRates = [];
             
             // 渲染表格
             const tableBody = document.getElementById('skillTableBody');
             tableBody.innerHTML = '';
-            
-            skills.forEach(([skillId, skill]) => {
+
+            // 渲染表格 + 收集图表数据
+            sortedSkills.forEach(([skillId, skill]) => {
+                const name = skill.displayName || skillId;
+
+                // 填表格
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${skillId}</td>
+                    <td>${name}</td>
                     <td>${skill.totalDamage.toLocaleString()}</td>
                     <td>${skill.totalCount}</td>
                     <td class="skill-crit">${(skill.critRate * 100).toFixed(2)}%</td>
@@ -1026,10 +1033,15 @@
                     <td>${skill.damageBreakdown.normal.toLocaleString()}</td>
                 `;
                 tableBody.appendChild(row);
+
+                // 收集给图表的数据
+                skillNames.push(name);
+                damages.push(skill.totalDamage);
+                critRates.push(skill.critRate * 100);
+                luckyRates.push(skill.luckyRate * 100);
             });
             
-            // 渲染图表
-            renderSkillCharts(skillIds, damages, critRates, luckyRates);
+            renderSkillCharts(skillNames, damages, critRates, luckyRates);
         }
         
         // 渲染技能图表
@@ -1087,9 +1099,9 @@
                     labelLine: {
                         show: false
                     },
-                    data: skillIds.map((id, index) => ({
+                    data: skillIds.map((name, index) => ({
                         value: damages[index],
-                        name: `技能 ${id}`
+                        name: name
                     }))
                 }]
             };

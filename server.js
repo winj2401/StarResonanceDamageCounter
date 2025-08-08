@@ -288,8 +288,12 @@ class UserData {
         const luckyCount = stat.count.lucky + stat.count.crit_lucky;
         const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
         const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
-        
+        const skillConfig = require('./skill_config.json').skills;
+        const cfg = skillConfig[skillId];
+        const name = cfg ? cfg.name : skillId;
+
         skills[skillId] = {
+            displayName: name,
             totalDamage: stat.stats.total,
             totalCount: stat.count.total,
             critCount: stat.count.critical + stat.count.crit_lucky,
