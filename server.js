@@ -283,27 +283,27 @@ class UserData {
     getSkillSummary() {
         const skills = {};
         for (const [skillId, stat] of this.skillUsage) {
-        const total = stat.stats.normal + stat.stats.critical + 
-                    stat.stats.lucky + stat.stats.crit_lucky;
-        const critCount = stat.count.critical + stat.count.crit_lucky;
-        const luckyCount = stat.count.lucky + stat.count.crit_lucky;
-        const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
-        const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
-        const skillConfig = require('./skill_config.json').skills;
-        const cfg = skillConfig[skillId];
-        const name = cfg ? cfg.name : skillId;
+            const total = stat.stats.normal + stat.stats.critical +
+                stat.stats.lucky + stat.stats.crit_lucky;
+            const critCount = stat.count.critical + stat.count.crit_lucky;
+            const luckyCount = stat.count.lucky + stat.count.crit_lucky;
+            const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
+            const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
+            const skillConfig = require('./skill_config.json').skills;
+            const cfg = skillConfig[skillId];
+            const name = cfg ? cfg.name : skillId;
 
-        skills[skillId] = {
-            displayName: name,
-            totalDamage: stat.stats.total,
-            totalCount: stat.count.total,
-            critCount: stat.count.critical + stat.count.crit_lucky,
-            luckyCount: stat.count.lucky + stat.count.crit_lucky,
-            critRate: critRate,
-            luckyRate: luckyRate,
-            damageBreakdown: { ...stat.stats },
-            countBreakdown: { ...stat.count }
-        };
+            skills[skillId] = {
+                displayName: name,
+                totalDamage: stat.stats.total,
+                totalCount: stat.count.total,
+                critCount: stat.count.critical + stat.count.crit_lucky,
+                luckyCount: stat.count.lucky + stat.count.crit_lucky,
+                critRate: critRate,
+                luckyRate: luckyRate,
+                damageBreakdown: { ...stat.stats },
+                countBreakdown: { ...stat.count }
+            };
         }
         return skills;
     }
@@ -373,7 +373,7 @@ class UserDataManager {
     getUser(uid) {
         if (!this.users.has(uid)) {
             const user = new UserData(uid);
-            
+
             // 从缓存中设置名字和职业
             const cachedData = this.userCache.get(String(uid));
             if (cachedData) {
@@ -384,7 +384,7 @@ class UserDataManager {
                     user.setProfession(cachedData.profession);
                 }
             }
-            
+
             this.users.set(uid, user);
         }
         return this.users.get(uid);
@@ -430,7 +430,7 @@ class UserDataManager {
     setProfession(uid, profession) {
         const user = this.getUser(uid);
         user.setProfession(profession);
-        
+
         // 更新缓存
         const uidStr = String(uid);
         if (!this.userCache.has(uidStr)) {
@@ -447,7 +447,7 @@ class UserDataManager {
     setName(uid, name) {
         const user = this.getUser(uid);
         user.setName(name);
-        
+
         // 更新缓存
         const uidStr = String(uid);
         if (!this.userCache.has(uidStr)) {
@@ -477,12 +477,12 @@ class UserDataManager {
     getUserSkillData(uid) {
         const user = this.users.get(uid);
         if (!user) return null;
-        
+
         return {
-        uid: user.uid,
-        name: user.name,
-        profession: user.profession,
-        skills: user.getSkillSummary()
+            uid: user.uid,
+            name: user.name,
+            profession: user.profession,
+            skills: user.getSkillSummary()
         };
     }
 
@@ -621,14 +621,14 @@ async function main() {
     app.get('/api/skill/:uid', (req, res) => {
         const uid = parseInt(req.params.uid);
         const skillData = userDataManager.getUserSkillData(uid);
-        
+
         if (!skillData) {
             return res.status(404).json({
-            code: 1,
-            msg: 'User not found'
+                code: 1,
+                msg: 'User not found'
             });
         }
-        
+
         res.json({
             code: 0,
             data: skillData
@@ -638,7 +638,7 @@ async function main() {
     // WebSocket 连接处理
     io.on('connection', (socket) => {
         logger.info('WebSocket client connected: ' + socket.id);
-        
+
         socket.on('disconnect', () => {
             logger.info('WebSocket client disconnected: ' + socket.id);
         });
@@ -681,7 +681,7 @@ async function main() {
         tcp_cache_size = 0;
     };
 
-    fragmentIpCache = {};
+    const fragmentIpCache = {};
     const getTCPPacket = (frameBuffer, ethOffset) => {
         const ipPacket = decoders.IPV4(frameBuffer, ethOffset);
         const ipId = ipPacket.info.id;
@@ -789,7 +789,7 @@ async function main() {
                                     tcp_next_seq = tcpPacket.info.seqno + buf.length;
                                     logger.info("Got Scene Server Address: " + src_server);
                                 }
-                            } catch (e) {}
+                            } catch (e) { }
                         } while (data1 && data1.length);
                     }
                 }
@@ -814,7 +814,7 @@ async function main() {
                         }
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
             tcp_lock.release();
             return;
         }
