@@ -356,6 +356,11 @@ class UserDataManager {
         this.userCache = new Map(); // 用户名字和职业缓存
         this.cacheFilePath = './users.json';
         this.loadUserCache();
+        
+        // 节流相关配置
+        this.saveThrottleDelay = 2000; // 2秒节流延迟，避免频繁磁盘写入
+        this.saveThrottleTimer = null;
+        this.pendingSave = false;
     }
 
     /** 加载用户缓存 */
@@ -379,6 +384,35 @@ class UserDataManager {
             fs.writeFileSync(this.cacheFilePath, JSON.stringify(cacheData, null, 2), 'utf8');
         } catch (error) {
             console.error('Failed to save user cache:', error);
+        }
+    }
+
+    /** 节流保存用户缓存 - 减少频繁的磁盘写入 */
+    saveUserCacheThrottled() {
+        this.pendingSave = true;
+
+        if (this.saveThrottleTimer) {
+            clearTimeout(this.saveThrottleTimer);
+        }
+
+        this.saveThrottleTimer = setTimeout(() => {
+            if (this.pendingSave) {
+                this.saveUserCache();
+                this.pendingSave = false;
+                this.saveThrottleTimer = null;
+            }
+        }, this.saveThrottleDelay);
+    }
+
+    /** 强制立即保存用户缓存 - 用于程序退出等场景 */
+    forceUserCacheSave() {
+        if (this.saveThrottleTimer) {
+            clearTimeout(this.saveThrottleTimer);
+            this.saveThrottleTimer = null;
+        }
+        if (this.pendingSave) {
+            this.saveUserCache();
+            this.pendingSave = false;
         }
     }
 
@@ -453,7 +487,7 @@ class UserDataManager {
             this.userCache.set(uidStr, {});
         }
         this.userCache.get(uidStr).profession = profession;
-        this.saveUserCache();
+        this.saveUserCacheThrottled();
     }
 
     /** 设置用户姓名
@@ -470,7 +504,7 @@ class UserDataManager {
             this.userCache.set(uidStr, {});
         }
         this.userCache.get(uidStr).name = name;
-        this.saveUserCache();
+        this.saveUserCacheThrottled();
     }
 
     /** 设置用户总评分
@@ -523,6 +557,19 @@ class UserDataManager {
 }
 
 const userDataManager = new UserDataManager();
+
+// 进程退出时保存用户缓存
+process.on('SIGINT', () => {
+    console.log('\n正在保存用户缓存...');
+    userDataManager.forceUserCacheSave();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n正在保存用户缓存...');
+    userDataManager.forceUserCacheSave();
+    process.exit(0);
+});
 
 // 暂停统计状态
 let isPaused = false;
