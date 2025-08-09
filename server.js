@@ -6,6 +6,7 @@ const net = require('net');
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const fs = require('fs');
 const PacketProcessor = require('./algo/packet');
 const pb = require('./algo/pb');
 const Readable = require("stream").Readable;
@@ -336,6 +337,33 @@ class UserData {
 class UserDataManager {
     constructor() {
         this.users = new Map();
+        this.userCache = new Map(); // 用户名字和职业缓存
+        this.cacheFilePath = './users.json';
+        this.loadUserCache();
+    }
+
+    /** 加载用户缓存 */
+    loadUserCache() {
+        try {
+            if (fs.existsSync(this.cacheFilePath)) {
+                const data = fs.readFileSync(this.cacheFilePath, 'utf8');
+                const cacheData = JSON.parse(data);
+                this.userCache = new Map(Object.entries(cacheData));
+                console.log(`Loaded ${this.userCache.size} user cache entries`);
+            }
+        } catch (error) {
+            console.error('Failed to load user cache:', error);
+        }
+    }
+
+    /** 保存用户缓存 */
+    saveUserCache() {
+        try {
+            const cacheData = Object.fromEntries(this.userCache);
+            fs.writeFileSync(this.cacheFilePath, JSON.stringify(cacheData, null, 2), 'utf8');
+        } catch (error) {
+            console.error('Failed to save user cache:', error);
+        }
     }
 
     /** 获取或创建用户记录
@@ -344,7 +372,20 @@ class UserDataManager {
      */
     getUser(uid) {
         if (!this.users.has(uid)) {
-            this.users.set(uid, new UserData(uid));
+            const user = new UserData(uid);
+            
+            // 从缓存中设置名字和职业
+            const cachedData = this.userCache.get(String(uid));
+            if (cachedData) {
+                if (cachedData.name) {
+                    user.setName(cachedData.name);
+                }
+                if (cachedData.profession) {
+                    user.setProfession(cachedData.profession);
+                }
+            }
+            
+            this.users.set(uid, user);
         }
         return this.users.get(uid);
     }
@@ -389,6 +430,14 @@ class UserDataManager {
     setProfession(uid, profession) {
         const user = this.getUser(uid);
         user.setProfession(profession);
+        
+        // 更新缓存
+        const uidStr = String(uid);
+        if (!this.userCache.has(uidStr)) {
+            this.userCache.set(uidStr, {});
+        }
+        this.userCache.get(uidStr).profession = profession;
+        this.saveUserCache();
     }
 
     /** 设置用户姓名
@@ -398,6 +447,14 @@ class UserDataManager {
     setName(uid, name) {
         const user = this.getUser(uid);
         user.setName(name);
+        
+        // 更新缓存
+        const uidStr = String(uid);
+        if (!this.userCache.has(uidStr)) {
+            this.userCache.set(uidStr, {});
+        }
+        this.userCache.get(uidStr).name = name;
+        this.saveUserCache();
     }
 
     /** 设置用户总评分
@@ -613,6 +670,7 @@ async function main() {
     let tcp_cache = {};
     let tcp_cache_size = 0;
     let tcp_last_time = 0;
+    let tcp_used_seq = [];
     const tcp_lock = new Lock();
 
     const clearTcpCache = () => {
@@ -621,7 +679,55 @@ async function main() {
         tcp_last_time = 0;
         tcp_cache = {};
         tcp_cache_size = 0;
-    }
+    };
+
+    fragmentIpCache = {};
+    const getTCPPacket = (frameBuffer, ethOffset) => {
+        const ipPacket = decoders.IPV4(frameBuffer, ethOffset);
+        const ipId = ipPacket.info.id;
+        const isFragment = (ipPacket.info.flags & 0x1) !== 0;
+
+        if (isFragment || ipPacket.info.fragoffset > 0) {
+            if (!fragmentIpCache[ipId]) fragmentIpCache[ipId] = [];
+
+            const ipBuffer = Buffer.from(frameBuffer.subarray(ethOffset));
+            fragmentIpCache[ipId].push(ipBuffer);
+
+            // there's more fragment ip packetm, wait for the rest
+            if (isFragment) {
+                return null;
+            }
+
+            // last fragment received, reassemble
+            const fragments = fragmentIpCache[ipId];
+            if (!fragments) {
+                logger.error(`Can't find fragments for IP ID ${ipId}`);
+                return null;
+            }
+
+            fragments.sort((bufferA, bufferB) => {
+                const ipA = decoders.IPV4(bufferA);
+                const ipB = decoders.IPV4(bufferB);
+                return ipA.info.fragoffset - ipB.info.fragoffset;
+            });
+
+            firstPacket = decoders.IPV4(fragments[0]);
+
+            // TODO: we need to concat buffer based on the offset
+            // we ignore it for now as we assume it is always at the end of the buffer
+            const fullPayload = Buffer.concat(
+                fragments.map((buffer) => {
+                    const ip = decoders.IPV4(buffer);
+                    return Buffer.from(buffer.subarray(ip.offset, ip.offset + (ip.info.totallen - ip.hdrlen)));
+                })
+            );
+
+            delete fragmentIpCache[ipId];
+            return fullPayload;
+        }
+
+        return Buffer.from(frameBuffer.subarray(ipPacket.offset, ipPacket.offset + (ipPacket.info.totallen - ipPacket.hdrlen)));
+    };
 
     //抓包相关
     const c = new Cap();
@@ -631,132 +737,145 @@ async function main() {
     const buffer = Buffer.alloc(65535);
     const linkType = c.open(device, filter, bufSize, buffer);
     c.setMinBytes && c.setMinBytes(0);
-    c.on('packet', async function (nbytes, trunc) {
-        const buffer1 = Buffer.from(buffer);
-        if (linkType === 'ETHERNET') {
-            var ret = decoders.Ethernet(buffer1);
-            if (ret.info.type === PROTOCOL.ETHERNET.IPV4) {
-                ret = decoders.IPV4(buffer1, ret.offset);
-                //logger.debug('from: ' + ret.info.srcaddr + ' to ' + ret.info.dstaddr);
-                const srcaddr = ret.info.srcaddr;
-                const dstaddr = ret.info.dstaddr;
+    c.on("packet", async function (nbytes, trunc) {
+        // logger.debug('packet: length ' + nbytes + ' bytes, truncated? ' + (trunc ? 'yes' : 'no'));
+        if (linkType !== "ETHERNET") return;
 
-                if (ret.info.protocol === PROTOCOL.IP.TCP) {
-                    var datalen = ret.info.totallen - ret.hdrlen;
+        const frameBuffer = Buffer.from(buffer);
+        var ethPacket = decoders.Ethernet(frameBuffer);
 
-                    ret = decoders.TCP(buffer1, ret.offset);
-                    //logger.debug(' from port: ' + ret.info.srcport + ' to port: ' + ret.info.dstport);
-                    const srcport = ret.info.srcport;
-                    const dstport = ret.info.dstport;
-                    const src_server = srcaddr + ':' + srcport + ' -> ' + dstaddr + ':' + dstport;
-                    datalen -= ret.hdrlen;
-                    let buf = Buffer.from(buffer1.subarray(ret.offset, ret.offset + datalen));
+        if (ethPacket.info.type !== PROTOCOL.ETHERNET.IPV4) return;
 
-                    if (tcp_last_time && Date.now() - tcp_last_time > 30000) {
-                        logger.warn('Cannot capture the next packet! Is the game closed or disconnected? seq: ' + tcp_next_seq);
-                        current_server = '';
-                        clearTcpCache();
-                    }
+        const ipPacket = decoders.IPV4(frameBuffer, ethPacket.offset);
+        const srcaddr = ipPacket.info.srcaddr;
+        const dstaddr = ipPacket.info.dstaddr;
 
-                    if (current_server !== src_server) {
-                        try {
-                            //尝试通过小包识别服务器
-                            if (buf[4] == 0) {
-                                const data = buf.subarray(10);
-                                if (data.length) {
-                                    const stream = Readable.from(data, { objectMode: false });
-                                    let data1;
-                                    do {
-                                        const len_buf = stream.read(4);
-                                        if (!len_buf) break;
-                                        data1 = stream.read(len_buf.readUInt32BE() - 4);
-                                        const signature = Buffer.from([0x00, 0x63, 0x33, 0x53, 0x42, 0x00]); //c3SB??
-                                        if (Buffer.compare(data1.subarray(5, 5 + signature.length), signature)) break;
-                                        try {
-                                            let body = pb.decode(data1.subarray(18)) || {};
-                                            if (current_server !== src_server) {
-                                                current_server = src_server;
-                                                clearTcpCache();
-                                                logger.info('Got Scene Server Address: ' + src_server);
-                                            }
-                                        } catch (e) { }
-                                    } while (data1 && data1.length)
+        const tcpBuffer = getTCPPacket(frameBuffer, ethPacket.offset);
+        if (tcpBuffer === null) return;
+        const tcpPacket = decoders.TCP(tcpBuffer);
+
+        const buf = Buffer.from(tcpBuffer.subarray(tcpPacket.hdrlen));
+
+        //logger.debug(' from port: ' + tcpPacket.info.srcport + ' to port: ' + tcpPacket.info.dstport);
+        const srcport = tcpPacket.info.srcport;
+        const dstport = tcpPacket.info.dstport;
+        const src_server = srcaddr + ":" + srcport + " -> " + dstaddr + ":" + dstport;
+
+        if (tcp_last_time && Date.now() - tcp_last_time > 30000) {
+            logger.warn("Cannot capture the next packet! Is the game closed or disconnected? seq: " + tcp_next_seq);
+            current_server = "";
+            clearTcpCache();
+        }
+
+        await tcp_lock.acquire();
+        if (current_server !== src_server) {
+            try {
+                //尝试通过小包识别服务器
+                if (buf[4] == 0) {
+                    const data = buf.subarray(10);
+                    if (data.length) {
+                        const stream = Readable.from(data, { objectMode: false });
+                        let data1;
+                        do {
+                            const len_buf = stream.read(4);
+                            if (!len_buf) break;
+                            data1 = stream.read(len_buf.readUInt32BE() - 4);
+                            const signature = Buffer.from([0x00, 0x63, 0x33, 0x53, 0x42, 0x00]); //c3SB??
+                            if (Buffer.compare(data1.subarray(5, 5 + signature.length), signature)) break;
+                            try {
+                                if (current_server !== src_server) {
+                                    current_server = src_server;
+                                    clearTcpCache();
+                                    tcp_next_seq = tcpPacket.info.seqno + buf.length;
+                                    logger.info("Got Scene Server Address: " + src_server);
                                 }
-                            }
-                            //尝试通过登录返回包识别服务器(仍需测试)
-                            if (buf.length === 0x62) {
-                                const signature = Buffer.from([
-                                    0x00, 0x00, 0x00, 0x62,
-                                    0x00, 0x03,
-                                    0x00, 0x00, 0x00, 0x01,
-                                    0x00, 0x11, 0x45, 0x14,//seq?
-                                    0x00, 0x00, 0x00, 0x00,
-                                    0x0a, 0x4e, 0x08, 0x01, 0x22, 0x24
-                                ]);
-                                if (Buffer.compare(buf.subarray(0, 10), signature.subarray(0, 10)) === 0 &&
-                                    Buffer.compare(buf.subarray(14, 14 + 6), signature.subarray(14, 14 + 6)) === 0) {
-                                    if (current_server !== src_server) {
-                                        current_server = src_server;
-                                        clearTcpCache();
-                                        logger.info('Got Scene Server Address by Login Return Packet: ' + src_server);
-                                    }
-                                }
-                            }
-                        } catch (e) { }
-                        return;
+                            } catch (e) {}
+                        } while (data1 && data1.length);
                     }
-                    //这里已经是识别到的服务器的包了
-                    await tcp_lock.acquire();
-                    if (tcp_next_seq === -1 && buf.length > 4 && buf.readUInt32BE() < 0x0fffff) { //第一次抓包可能抓到后半段的，先丢了
-                        tcp_next_seq = ret.info.seqno;
-                    }
-                    // logger.debug('TCP next seq: ' + tcp_next_seq);
-                    tcp_cache[ret.info.seqno] = buf;
-                    tcp_cache_size++;
-                    while (tcp_cache[tcp_next_seq]) {
-                        const seq = tcp_next_seq;
-                        _data = _data.length === 0 ? tcp_cache[seq] : Buffer.concat([_data, tcp_cache[seq]]);
-                        tcp_next_seq = (seq + tcp_cache[seq].length) >>> 0; //uint32
-                        tcp_cache[seq] = undefined;
-                        tcp_cache_size--;
-                        tcp_last_time = Date.now();
-                        setTimeout(() => {
-                            if (tcp_cache[seq]) {
-                                tcp_cache[seq] = undefined;
-                                tcp_cache_size--;
-                            }
-                        }, 10000);
-                    }
-                    /*
-                    if (tcp_cache_size > 30) {
-                        logger.warn('Too much unused tcp cache! Is the game reconnected? seq: ' + tcp_next_seq + ' size:' + tcp_cache_size);
-                        clearTcpCache();
-                    }
-                    */
-
-                    while (_data.length > 4) {
-                        let packetSize = _data.readUInt32BE();
-
-                        if (_data.length < packetSize) break;
-
-                        if (_data.length >= packetSize) {
-                            const packet = _data.subarray(0, packetSize);
-                            _data = _data.subarray(packetSize);
-                            const processor = new PacketProcessor({ logger, userDataManager });
-                            if (!isPaused) processor.processPacket(packet);
-                        } else if (packetSize > 0x0fffff) {
-                            logger.error(`Invalid Length!! ${_data.length},${len},${_data.toString('hex')},${tcp_next_seq}`);
-                            process.exit(1);
-                            break;
+                }
+                //尝试通过登录返回包识别服务器(仍需测试)
+                if (buf.length === 0x62) {
+                    // prettier-ignore
+                    const signature = Buffer.from([
+                        0x00, 0x00, 0x00, 0x62,
+                        0x00, 0x03,
+                        0x00, 0x00, 0x00, 0x01,
+                        0x00, 0x11, 0x45, 0x14,//seq?
+                        0x00, 0x00, 0x00, 0x00,
+                        0x0a, 0x4e, 0x08, 0x01, 0x22, 0x24
+                    ]);
+                    if (Buffer.compare(buf.subarray(0, 10), signature.subarray(0, 10)) === 0 &&
+                        Buffer.compare(buf.subarray(14, 14 + 6), signature.subarray(14, 14 + 6)) === 0) {
+                        if (current_server !== src_server) {
+                            current_server = src_server;
+                            clearTcpCache();
+                            tcp_next_seq = tcpPacket.info.seqno + buf.length;
+                            logger.info("Got Scene Server Address by Login Return Packet: " + src_server);
                         }
                     }
-                    tcp_lock.release();
-                } else
-                    logger.error('Unsupported IPv4 protocol: ' + PROTOCOL.IP[ret.info.protocol]);
-            } else
-                logger.error('Unsupported Ethertype: ' + PROTOCOL.ETHERNET[ret.info.type]);
+                }
+            } catch (e) {}
+            tcp_lock.release();
+            return;
         }
-    })
+        // logger.debug(`packet seq ${tcpPacket.info.seqno >>> 0} size ${buf.length} expected next seq ${((tcpPacket.info.seqno >>> 0) + buf.length) >>> 0}`);
+        //这里已经是识别到的服务器的包了
+        if (tcp_next_seq === -1) {
+            logger.error("Unexpected TCP capture error! tcp_next_seq is -1");
+            if (buf.length > 4 && buf.readUInt32BE() < 0x0fffff) {
+                tcp_next_seq = tcpPacket.info.seqno;
+            }
+        }
+        // logger.debug('TCP next seq: ' + tcp_next_seq);
+        tcp_cache[tcpPacket.info.seqno] = buf;
+        tcp_cache_size++;
+        while (tcp_cache[tcp_next_seq]) {
+            const seq = tcp_next_seq;
+            _data = _data.length === 0 ? tcp_cache[seq] : Buffer.concat([_data, tcp_cache[seq]]);
+            tcp_next_seq = (seq + tcp_cache[seq].length) >>> 0; //uint32
+            delete tcp_cache[seq];
+            tcp_cache_size--;
+            tcp_last_time = Date.now();
+            tcp_used_seq.push({
+                seq: seq,
+                time: tcp_last_time,
+            });
+        }
+
+        while (_data.length > 4) {
+            let packetSize = _data.readUInt32BE();
+
+            if (_data.length < packetSize) break;
+
+            if (_data.length >= packetSize) {
+                const packet = _data.subarray(0, packetSize);
+                _data = _data.subarray(packetSize);
+                const processor = new PacketProcessor({ logger, userDataManager });
+                if (!isPaused) processor.processPacket(packet);
+            } else if (packetSize > 0x0fffff) {
+                logger.error(`Invalid Length!! ${_data.length},${len},${_data.toString("hex")},${tcp_next_seq}`);
+                process.exit(1);
+                break;
+            }
+        }
+        tcp_lock.release();
+    });
+
+    //定时清理TCP缓存，删掉意外重传的数据包
+    setInterval(async () => {
+        const now = Date.now();
+        await tcp_lock.acquire();
+        tcp_used_seq = tcp_used_seq.filter(item => {
+            if (now - item.time > 10000) {
+                if (!tcp_cache[item.seq]) return false;
+                delete tcp_cache[item.seq];
+                tcp_cache_size--;
+                return false;
+            }
+            return true;
+        });
+        tcp_lock.release();
+    }, 10000);
 }
 
 main();
