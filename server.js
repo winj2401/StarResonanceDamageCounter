@@ -667,31 +667,38 @@ async function main() {
     let current_server = '';
     let _data = Buffer.alloc(0);
     let tcp_next_seq = -1;
-    let tcp_cache = {};
-    let tcp_cache_size = 0;
+    let tcp_cache = new Map();
     let tcp_last_time = 0;
-    let tcp_used_seq = [];
     const tcp_lock = new Lock();
 
     const clearTcpCache = () => {
         _data = Buffer.alloc(0);
         tcp_next_seq = -1;
         tcp_last_time = 0;
-        tcp_cache = {};
-        tcp_cache_size = 0;
+        tcp_cache.clear();
     };
 
-    const fragmentIpCache = {};
+    const fragmentIpCache = new Map();
+    const FRAGMENT_TIMEOUT = 30000;
     const getTCPPacket = (frameBuffer, ethOffset) => {
         const ipPacket = decoders.IPV4(frameBuffer, ethOffset);
         const ipId = ipPacket.info.id;
         const isFragment = (ipPacket.info.flags & 0x1) !== 0;
+        const _key = `${ipId}-${ipPacket.info.srcaddr}-${ipPacket.info.dstaddr}-${ipPacket.info.protocol}`;
+        const now = Date.now();
 
         if (isFragment || ipPacket.info.fragoffset > 0) {
-            if (!fragmentIpCache[ipId]) fragmentIpCache[ipId] = [];
+            if (!fragmentIpCache.has(_key)) {
+                fragmentIpCache.set(_key, {
+                    fragments: [],
+                    timestamp: now
+                });
+            }
 
+            const cacheEntry = fragmentIpCache.get(_key);
             const ipBuffer = Buffer.from(frameBuffer.subarray(ethOffset));
-            fragmentIpCache[ipId].push(ipBuffer);
+            cacheEntry.fragments.push(ipBuffer);
+            cacheEntry.timestamp = now;
 
             // there's more fragment ip packetm, wait for the rest
             if (isFragment) {
@@ -699,30 +706,40 @@ async function main() {
             }
 
             // last fragment received, reassemble
-            const fragments = fragmentIpCache[ipId];
+            const fragments = cacheEntry.fragments;
             if (!fragments) {
-                logger.error(`Can't find fragments for IP ID ${ipId}`);
+                logger.error(`Can't find fragments for ${_key}`);
                 return null;
             }
 
-            fragments.sort((bufferA, bufferB) => {
-                const ipA = decoders.IPV4(bufferA);
-                const ipB = decoders.IPV4(bufferB);
-                return ipA.info.fragoffset - ipB.info.fragoffset;
-            });
+            // Reassemble fragments based on their offset
+            let totalLength = 0;
+            const fragmentData = [];
 
-            firstPacket = decoders.IPV4(fragments[0]);
+            // Collect fragment data with their offsets
+            for (const buffer of fragments) {
+                const ip = decoders.IPV4(buffer);
+                const fragmentOffset = ip.info.fragoffset * 8;
+                const payloadLength = ip.info.totallen - ip.hdrlen;
+                const payload = Buffer.from(buffer.subarray(ip.offset, ip.offset + payloadLength));
+                
+                fragmentData.push({
+                    offset: fragmentOffset,
+                    payload: payload
+                });
 
-            // TODO: we need to concat buffer based on the offset
-            // we ignore it for now as we assume it is always at the end of the buffer
-            const fullPayload = Buffer.concat(
-                fragments.map((buffer) => {
-                    const ip = decoders.IPV4(buffer);
-                    return Buffer.from(buffer.subarray(ip.offset, ip.offset + (ip.info.totallen - ip.hdrlen)));
-                })
-            );
+                const endOffset = fragmentOffset + payloadLength;
+                if (endOffset > totalLength) {
+                    totalLength = endOffset;
+                }
+            }
 
-            delete fragmentIpCache[ipId];
+            const fullPayload = Buffer.alloc(totalLength);
+            for (const fragment of fragmentData) {
+                fragment.payload.copy(fullPayload, fragment.offset);
+            }
+
+            fragmentIpCache.delete(_key);
             return fullPayload;
         }
 
@@ -760,12 +777,6 @@ async function main() {
         const srcport = tcpPacket.info.srcport;
         const dstport = tcpPacket.info.dstport;
         const src_server = srcaddr + ":" + srcport + " -> " + dstaddr + ":" + dstport;
-
-        if (tcp_last_time && Date.now() - tcp_last_time > 30000) {
-            logger.warn("Cannot capture the next packet! Is the game closed or disconnected? seq: " + tcp_next_seq);
-            current_server = "";
-            clearTcpCache();
-        }
 
         await tcp_lock.acquire();
         if (current_server !== src_server) {
@@ -827,19 +838,16 @@ async function main() {
             }
         }
         // logger.debug('TCP next seq: ' + tcp_next_seq);
-        tcp_cache[tcpPacket.info.seqno] = buf;
-        tcp_cache_size++;
-        while (tcp_cache[tcp_next_seq]) {
+        if (((tcp_next_seq - tcpPacket.info.seqno) << 0) < 0 || tcp_next_seq === -1) {
+            tcp_cache.set(tcpPacket.info.seqno, buf);
+        }
+        while (tcp_cache.has(tcp_next_seq)) {
             const seq = tcp_next_seq;
-            _data = _data.length === 0 ? tcp_cache[seq] : Buffer.concat([_data, tcp_cache[seq]]);
-            tcp_next_seq = (seq + tcp_cache[seq].length) >>> 0; //uint32
-            delete tcp_cache[seq];
-            tcp_cache_size--;
+            const cachedTcpData = tcp_cache.get(seq);
+            _data = _data.length === 0 ? cachedTcpData : Buffer.concat([_data, cachedTcpData]);
+            tcp_next_seq = (seq + cachedTcpData.length) >>> 0; //uint32
+            tcp_cache.delete(seq);
             tcp_last_time = Date.now();
-            tcp_used_seq.push({
-                seq: seq,
-                time: tcp_last_time,
-            });
         }
 
         while (_data.length > 4) {
@@ -861,20 +869,25 @@ async function main() {
         tcp_lock.release();
     });
 
-    //定时清理TCP缓存，删掉意外重传的数据包
+    //定时清理过期的IP分片缓存
     setInterval(async () => {
         const now = Date.now();
-        await tcp_lock.acquire();
-        tcp_used_seq = tcp_used_seq.filter(item => {
-            if (now - item.time > 10000) {
-                if (!tcp_cache[item.seq]) return false;
-                delete tcp_cache[item.seq];
-                tcp_cache_size--;
-                return false;
+        let clearedFragments = 0;
+        for (const [key, cacheEntry] of fragmentIpCache) {
+            if (now - cacheEntry.timestamp > FRAGMENT_TIMEOUT) {
+                fragmentIpCache.delete(key);
+                clearedFragments++;
             }
-            return true;
-        });
-        tcp_lock.release();
+        }
+        if (clearedFragments > 0) {
+            logger.debug(`Cleared ${clearedFragments} expired IP fragment caches`);
+        }
+
+        if (tcp_last_time && Date.now() - tcp_last_time > FRAGMENT_TIMEOUT) {
+            logger.warn("Cannot capture the next packet! Is the game closed or disconnected? seq: " + tcp_next_seq);
+            current_server = "";
+            clearTcpCache();
+        }
     }, 10000);
 }
 
