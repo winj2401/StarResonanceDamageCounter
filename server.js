@@ -684,7 +684,7 @@ async function main() {
     fragmentIpCache = {};
     const getTCPPacket = (frameBuffer, ethOffset) => {
         const ipPacket = decoders.IPV4(frameBuffer, ethOffset);
-        const ipId = ipPacket.info.id;
+        const ipId = `${ipPacket.info.id}-${ipPacket.info.srcaddr}-${ipPacket.info.dstaddr}`;
         const isFragment = (ipPacket.info.flags & 0x1) !== 0;
 
         if (isFragment || ipPacket.info.fragoffset > 0) {
