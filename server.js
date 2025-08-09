@@ -838,7 +838,7 @@ async function main() {
             }
         }
         // logger.debug('TCP next seq: ' + tcp_next_seq);
-        if (((tcp_next_seq - tcpPacket.info.seqno) << 0) < 0 || tcp_next_seq === -1) {
+        if (((tcp_next_seq - tcpPacket.info.seqno) << 0) <= 0 || tcp_next_seq === -1) {
             tcp_cache.set(tcpPacket.info.seqno, buf);
         }
         while (tcp_cache.has(tcp_next_seq)) {
