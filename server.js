@@ -285,8 +285,8 @@ class UserData {
         for (const [skillId, stat] of this.skillUsage) {
             const total = stat.stats.normal + stat.stats.critical +
                 stat.stats.lucky + stat.stats.crit_lucky;
-            const critCount = stat.count.critical + stat.count.crit_lucky;
-            const luckyCount = stat.count.lucky + stat.count.crit_lucky;
+            const critCount = stat.count.critical;
+            const luckyCount = stat.count.lucky;
             const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
             const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
             const skillConfig = require('./skill_config.json').skills;
@@ -297,8 +297,8 @@ class UserData {
                 displayName: name,
                 totalDamage: stat.stats.total,
                 totalCount: stat.count.total,
-                critCount: stat.count.critical + stat.count.crit_lucky,
-                luckyCount: stat.count.lucky + stat.count.crit_lucky,
+                critCount: stat.count.critical,
+                luckyCount: stat.count.lucky,
                 critRate: critRate,
                 luckyRate: luckyRate,
                 damageBreakdown: { ...stat.stats },
