@@ -881,14 +881,15 @@
                         <thead>
                             <tr>
                                 <th>技能ID</th>
-                                <th>总伤害</th>
+                                <th>类型</th>
+                                <th>总数值</th>
                                 <th>使用次数</th>
                                 <th>暴击率</th>
                                 <th>幸运率</th>
-                                <th>暴击伤害</th>
-                                <th>幸运伤害</th>
+                                <th>暴击数值</th>
+                                <th>幸运数值</th>
                                 <th>暴击幸运</th>
-                                <th>普通伤害</th>
+                                <th>普通数值</th>
                             </tr>
                         </thead>
                         <tbody id="skillTableBody"></tbody>
@@ -1098,6 +1099,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${name}</td>
+                    <td>${skill.type}</td>
                     <td>${skill.totalDamage.toLocaleString()}</td>
                     <td>${skill.totalCount}</td>
                     <td class="skill-crit">${(skill.critRate * 100).toFixed(2)}%</td>
@@ -1146,10 +1148,10 @@
             skillChart1 = echarts.init(document.getElementById('skillDamageChart'));
             skillChart2 = echarts.init(document.getElementById('skillCritChart'));
             
-            // 技能伤害分布图
+            // 技能数值分布图
             const damageOption = {
                 title: {
-                    text: '技能伤害分布',
+                    text: '技能数值分布',
                     left: 'center',
                     textStyle: { color: '#e2e8f0' }
                 },
@@ -1167,7 +1169,7 @@
                     textStyle: { color: '#cbd5e0' }
                 },
                 series: [{
-                    name: '技能伤害',
+                    name: '技能数值',
                     type: 'pie',
                     radius: ['40%', '70%'],
                     avoidLabelOverlap: false,

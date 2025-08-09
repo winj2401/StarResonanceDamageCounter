@@ -293,8 +293,24 @@ class UserData {
             const cfg = skillConfig[skillId];
             const name = cfg ? cfg.name : skillId;
 
+            let type = '未知';
+            if (cfg) {
+                switch (cfg.type) {
+                    case 'damage':
+                        type = '伤害';
+                        break;
+                    case 'healing':
+                        type = '治疗';
+                        break;
+                    default:
+                        type = '未知';
+                        break;
+                }
+            }
+
             skills[skillId] = {
                 displayName: name,
+                type: type,
                 totalDamage: stat.stats.total,
                 totalCount: stat.count.total,
                 critCount: stat.count.critical,
