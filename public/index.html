@@ -993,6 +993,9 @@
         let isUpdatingFromLegend = false; // 防止图例事件和控制面板事件相互触发
         let currentUserArray = []; // 缓存当前用户数组用于查找用户名
         
+        // y轴动态调整相关变量 
+        const Y_AXIS_FLOOR_MIN = 10000;
+        
         // WebSocket连接相关变量
         let socket = null;
         let isWebSocketConnected = false;
@@ -1015,6 +1018,31 @@
         let skillChart1 = null;
         let skillChart2 = null;
         let currentSkillUserId = 0;
+        
+        // 从series数据中提取可见最大值
+        function getVisibleMaxFromSeries(seriesArray) {
+            let m = 0;
+            for (const series of seriesArray) {
+                const arr = series.data || [];
+                for (let i = 0; i < arr.length; i++) {
+                    const v = arr[i];
+                    if (typeof v === 'number') m = Math.max(m, v);
+                }
+            }
+            return m;
+        }
+
+        // 将数值向上取整到好读的档位
+        function niceCeil(val) {
+            if (val <= 0) return 1000;
+            const exp = Math.pow(10, Math.floor(Math.log10(val)));
+            const bases = [1, 2, 2.5, 5, 10, 20, 25, 50, 100];
+            for (const b of bases) {
+                const candidate = b * exp;
+                if (candidate >= val) return candidate;
+            }
+            return Math.ceil(val / exp) * exp;
+        }
         
         // 显示技能分析弹窗
         async function showSkillAnalysis(userId) {
@@ -2107,19 +2135,13 @@
             const currentOption = chart.getOption();
             const currentSeries = currentOption.series || [];
             
-            // 生成时间轴数据 (只在初次或数据长度变化时更新)
-            if (!chartInitialized || !currentOption.xAxis || !currentOption.xAxis[0] || currentOption.xAxis[0].data.length !== dataLength) {
-                const xAxisData = [];
+            // 生成时间轴数据
+            const xAxisChanged = !chartInitialized || !currentOption.xAxis || !currentOption.xAxis[0] || currentOption.xAxis[0].data.length !== dataLength;
+            let xAxisData = [];
+            if (xAxisChanged) {
                 for (let i = 0; i < dataLength; i++) {
                     xAxisData.push('');
                 }
-                
-                chart.setOption({
-                    xAxis: {
-                        data: xAxisData
-                    }
-                }, false, true); // 不合并，静默更新
-                
                 chartInitialized = true;
             }
             
@@ -2245,16 +2267,106 @@
                 legendSelected[seriesName] = !(userIdStr && visibleUsers[userIdStr] === false);
             });
             
-            // 使用ECharts内置的图例机制，统一处理显示/隐藏
+            // y轴调整算法
+            const visibleMax = getVisibleMaxFromSeries(updatedSeries);
+            
+            // 让可见最大值占约75%图高，向上取整
+            let proposedTop = visibleMax > 0 ? 
+                niceCeil(visibleMax / 0.75) : Y_AXIS_FLOOR_MIN;
+            
+            // 保底最小值
+            proposedTop = Math.max(proposedTop, Y_AXIS_FLOOR_MIN);
+            
+            // 加3%顶部余量防压顶
+            proposedTop = Math.max(proposedTop, visibleMax * 1.03);
+            
+            // 上快下慢 + 短暂滞后
+            const DOWN_FRAC = 0.85;
+            const DOWN_DWELL_MS = 1500;
+            const nowTs = Date.now();
+            window.__ymax_state = window.__ymax_state || { yMax: 10000, since: 0 };
+            
+            let { yMax: curTop, since } = window.__ymax_state;
+            
+            // 是否允许下调
+            let canDown = false;
+            if (visibleMax < curTop * DOWN_FRAC) {
+                if (!since) since = nowTs;
+                canDown = (nowTs - since) >= DOWN_DWELL_MS;
+            } else {
+                since = 0; // 只要又接近上沿，取消降轴计时
+            }
+            
+            // 只允许在 canDown==true 时把目标设得比当前低
+            if (!canDown && proposedTop < curTop) proposedTop = curTop;
+            
+            // 限制单帧最大降幅
+            const MAX_DROP = 0.15;
+            if (proposedTop < curTop * (1 - MAX_DROP)) {
+                proposedTop = curTop * (1 - MAX_DROP);
+            }
+            
+            // 平滑一步
+            const alpha = proposedTop > curTop ? 0.35 : 0.18;
+            curTop = curTop + alpha * (proposedTop - curTop);
+            
+            // 微抖收敛
+            if (Math.abs(curTop - proposedTop) < 1) curTop = proposedTop;
+            
+            // 更新状态
+            window.__ymax_state = { yMax: curTop, since };
+            
+            // 合并所有配置为一次setOption调用
             chart.setOption({
+                // 如果这次 x 轴长度改变，也一起带上
+                ...(xAxisChanged ? { xAxis: { data: xAxisData } } : {}),
                 series: updatedSeries,
                 legend: {
-                    data: updatedSeries.map(s => s.name), // 重新设置图例数据
+                    data: updatedSeries.map(s => s.name),
                     selected: legendSelected,
                     textStyle: {
                         color: document.body.classList.contains('dark-mode') ? '#cbd5e1' : '#666'
                     }
-                }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'DPS',
+                    nameTextStyle: {
+                        color: '#666',
+                        fontSize: 12
+                    },
+                    min: 0,
+                    max: curTop,
+                    splitNumber: 6,
+                    animation: false,
+                    axisLine: {
+                        lineStyle: {
+                            color: '#ddd'
+                        }
+                    },
+                    axisTick: {
+                        lineStyle: {
+                            color: '#ddd'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#666',
+                        fontSize: 11,
+                        formatter: function(value) {
+                            if (value >= 1000) {
+                                return (value / 1000).toFixed(1) + 'K';
+                            }
+                            return value;
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#f0f0f0',
+                            type: 'dashed'
+                        }
+                    }
+                },
+                grid: { left: 56, right: '4%', bottom: '8%', top: '15%', containLabel: true }
             }, false, true);
             
             // 更新状态显示
