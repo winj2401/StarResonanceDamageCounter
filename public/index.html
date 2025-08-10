@@ -1309,31 +1309,39 @@
         let userPriorityCache = {}; // 用户优先级缓存
         
         // 优化的20色配色方案
-        const colors = [
-            '#C64545', '#C66C45', '#C69345', '#C6B945', '#ADC645',
-            '#86C645', '#5FC645', '#45C652', '#45C679', '#45C6A0',
-            '#45C6C6', '#45A0C6', '#4579C6', '#4552C6', '#5F45C6',
-            '#8645C6', '#AD45C6', '#C645B9', '#C64593', '#C6456C'
-        ];
+        const PALETTE_DARK_20 = [
+            "#FF6B6B","#4ECDC4","#45B7D1","#96CEB4","#FFEAA7",
+            "#DDA0DD","#FF9F43","#54A0FF","#5F27CD","#00D2D3",
+            "#10AC84","#EE5A24","#0984E3","#6C5CE7","#FD79A8",
+            "#FF7675","#74B9FF","#A29BFE","#00B894","#FDCB6E"
+        ]; // 高饱和度版本，深色背景下区分度更高
+
+        const PALETTE_LIGHT_20 = [
+            "#E74C3C","#3498DB","#2ECC71","#F39C12","#9B59B6",
+            "#1ABC9C","#E67E22","#34495E","#F1C40F","#E91E63",
+            "#8E44AD","#16A085","#27AE60","#F39800","#D35400",
+            "#C0392B","#2980B9","#17A2B8","#28A745","#6F42C1"
+        ]; // 强对比版本，浅色背景下清晰易辨
+
+        function pickPalette() {
+            return document.body.classList.contains('dark-mode') ? PALETTE_DARK_20 : PALETTE_LIGHT_20;
+        }
         
         // 为用户分配固定颜色
         function getUserColor(userId) {
+            const palette = pickPalette();
             const userIdStr = String(userId);
             
             if (!userColorMap[userIdStr]) {
                 // 基于用户ID的哈希值分配颜色，确保同一个用户总是得到相同的颜色
                 let hash = 0;
                 for (let i = 0; i < userIdStr.length; i++) {
-                    const char = userIdStr.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + char;
-                    hash = hash & hash; // 转换为32位整数
+                    hash = ((hash << 5) - hash) + userIdStr.charCodeAt(i);
+                    hash |= 0;
                 }
-                
-                // 使用哈希值选择颜色
-                const colorIndex = Math.abs(hash) % colors.length;
-                userColorMap[userIdStr] = colors[colorIndex];
+                const idx = Math.abs(hash) % palette.length;
+                userColorMap[userIdStr] = palette[idx];
             }
-            
             return userColorMap[userIdStr];
         }
 
@@ -2193,10 +2201,11 @@
                     }
                 }
                 
-                // 线条样式
-                const lineWidths = [3, 2.5, 2.2, 1.8, 1.5];
-                const widthIndex = Math.floor(index / 4) % lineWidths.length;
-                const lineWidth = performanceMode ? Math.max(1.5, lineWidths[widthIndex] - 0.5) : lineWidths[widthIndex];
+                // 重要程度分层样式（Top 5突出显示）
+                const PRIMARY_COUNT = 5;
+                const isPrimary = index < PRIMARY_COUNT;
+                const lineWidth = isPrimary ? 3.0 : 1.2;
+                const opacity = isPrimary ? 1.0 : 0.45;
                 
                 // 检查是否存在同名series
                 if (existingSeriesMap[nickname]) {
@@ -2208,39 +2217,49 @@
                         lineStyle: {
                             ...existingSeries.lineStyle,
                             color: color,
-                            width: lineWidth
+                            width: lineWidth,
+                            opacity: opacity
                         },
                         itemStyle: {
-                            color: color
-                        }
+                            color: color,
+                            opacity: opacity
+                        },
+                        z: isPrimary ? 3 : 1,
+                        zlevel: isPrimary ? 0 : -1
                     });
                 } else {
-                    // 创建新series
+                    // 创建新series（分层显示）
                     updatedSeries.push({
                         name: nickname,
                         type: 'line',
                         data: data,
+                        symbol: 'none',
+                        smooth: 0.15,
+                        connectNulls: false,
+                        sampling: 'lttb',
+                        animation: false,
+                        silent: false,
                         lineStyle: {
                             color: color,
                             width: lineWidth,
-                            cap: 'round',
-                            join: 'round'
+                            opacity: opacity
                         },
-                        itemStyle: {
-                            color: color
+                        itemStyle: { 
+                            color: color, 
+                            opacity: opacity 
                         },
-                        symbol: 'none',
-                        smooth: 0.15, // 减少平滑度避免过度计算
-                        connectNulls: false,
-                        sampling: 'lttb',
-                        animation: false, // 完全禁用动画
-                        silent: false, // 保持交互性
                         emphasis: {
                             focus: 'series',
-                            lineStyle: {
-                                width: lineWidth + 0.5
+                            lineStyle: { 
+                                width: lineWidth + 0.7, 
+                                opacity: 1 
+                            },
+                            itemStyle: { 
+                                opacity: 1 
                             }
-                        }
+                        },
+                        z: isPrimary ? 3 : 1,
+                        zlevel: isPrimary ? 0 : -1
                     });
                 }
             });
@@ -2319,38 +2338,38 @@
             // 合并所有配置为一次setOption调用
             chart.setOption({
                 // 如果这次 x 轴长度改变，也一起带上
-                ...(xAxisChanged ? { xAxis: { data: xAxisData } } : {}),
+                ...(xAxisChanged ? { 
+                    xAxis: { 
+                        data: xAxisData,
+                        axisLine: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
+                        axisTick: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
+                        axisLabel: { color: 'rgba(220,220,220,0.65)' },
+                        splitLine: { show: true, lineStyle: { color: 'rgba(200,200,200,0.12)', type: 'dashed' } }
+                    } 
+                } : {}),
                 series: updatedSeries,
                 legend: {
                     data: updatedSeries.map(s => s.name),
                     selected: legendSelected,
                     textStyle: {
-                        color: document.body.classList.contains('dark-mode') ? '#cbd5e1' : '#666'
+                        color: document.body.classList.contains('dark-mode') ? '#E6E6E6' : '#444'
                     }
                 },
                 yAxis: {
                     type: 'value',
                     name: 'DPS',
                     nameTextStyle: {
-                        color: '#666',
+                        color: document.body.classList.contains('dark-mode') ? 'rgba(220,220,220,0.8)' : '#666',
                         fontSize: 12
                     },
                     min: 0,
                     max: curTop,
                     splitNumber: 6,
                     animation: false,
-                    axisLine: {
-                        lineStyle: {
-                            color: '#ddd'
-                        }
-                    },
-                    axisTick: {
-                        lineStyle: {
-                            color: '#ddd'
-                        }
-                    },
+                    axisLine: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
+                    axisTick: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
                     axisLabel: {
-                        color: '#666',
+                        color: 'rgba(220,220,220,0.65)',
                         fontSize: 11,
                         formatter: function(value) {
                             if (value >= 1000) {
@@ -2359,12 +2378,12 @@
                             return value;
                         }
                     },
-                    splitLine: {
-                        lineStyle: {
-                            color: '#f0f0f0',
-                            type: 'dashed'
-                        }
-                    }
+                    splitLine: { lineStyle: { color: 'rgba(200,200,200,0.12)', type: 'dashed' } }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(32,32,40,0.92)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    textStyle: { color: '#EEE' }
                 },
                 grid: { left: 56, right: '4%', bottom: '8%', top: '15%', containLabel: true }
             }, false, true);
