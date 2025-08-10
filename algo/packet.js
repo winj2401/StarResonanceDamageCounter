@@ -315,11 +315,16 @@ class PacketProcessor {
             if (!vData.CharBase) return;
             const charBase = vData.CharBase;
 
-            if (!charBase.Name) return;
-            this.userDataManager.setName(playerUid, charBase.Name);
+            if (charBase.Name)
+                this.userDataManager.setName(playerUid, charBase.Name);
 
-            if (!charBase.FightPoint) return;
-            this.userDataManager.setFightPoint(playerUid, charBase.FightPoint);
+            if (charBase.FightPoint)
+                this.userDataManager.setFightPoint(playerUid, charBase.FightPoint);
+
+            if (!vData.ProfessionList) return;
+            const professionList = vData.ProfessionList;
+            if (professionList.CurProfessionId)
+                this.userDataManager.setProfession(playerUid, getProfessionNameFromId(professionList.CurProfessionId));
         } catch (err) {
             fs.writeFileSync('./SyncContainerData.dat', payloadBuffer);
             this.logger.warn(`Failed to decode SyncContainerData for player ${currentUserUuid.shiftRight(16)}. Please report to developer`);
