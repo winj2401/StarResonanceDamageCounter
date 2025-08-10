@@ -39,6 +39,48 @@ function ask(question) {
     });
 }
 
+function getSubProfessionBySkillId(skillId) {
+    switch (skillId) {
+        case 1241:
+            return '射线';
+        case 55302:
+            return '协奏';
+        case 20301:
+        case 21418:
+            return '愈合';
+        case 1518:
+        case 1541:
+            return '惩戒';
+        case 2306:
+            return '狂音';
+        case 120902:
+            return '冰矛';
+        case 1714:
+        case 1734:
+            return '居合';
+        case 44701:
+            return '月刃';
+        case 220112:
+        case 2203622:
+            return '鹰弓';
+        case 1700827:
+            return '狼弓';
+        case 1419:
+            return '空枪';
+        case 1405:
+        case 1418:
+            return '重装';
+        case 2405:
+            return '防盾';
+        case 2406:
+            return '光盾';
+        case 199902:
+            return '岩盾';
+        default:
+            return '';
+    }
+}
+
 class Lock {
     constructor() {
         this.queue = [];
@@ -203,6 +245,7 @@ class UserData {
         this.profession = '未知';
         this.skillUsage = new Map(); // 技能使用情况
         this.fightPoint = 0; // 总评分
+        this.subProfession = '';
     }
 
     /** 添加伤害记录
@@ -220,6 +263,11 @@ class UserData {
         }
         this.skillUsage.get(skillId).addRecord(damage, isCrit, isLucky, hpLessenValue);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
+
+        const subProfession = getSubProfessionBySkillId(skillId);
+        if (subProfession) {
+            this.setSubProfession(subProfession);
+        }
     }
 
     /** 添加治疗记录
@@ -236,6 +284,11 @@ class UserData {
         }
         this.skillUsage.get(skillId).addRecord(healing, isCrit, isLucky);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
+
+        const subProfession = getSubProfessionBySkillId(skillId);
+        if (subProfession) {
+            this.setSubProfession(subProfession);
+        }
     }
 
     /** 添加承伤记录
@@ -243,13 +296,6 @@ class UserData {
      * */
     addTakenDamage(damage) {
         this.takenDamage += damage;
-    }
-
-    /** 设置职业
-     * @param {string} profession - 职业名称
-     * */
-    setProfession(profession) {
-        this.profession = profession;
     }
 
     /** 更新实时DPS和HPS 计算过去1秒内的总伤害和治疗 */
@@ -291,7 +337,7 @@ class UserData {
             total_hps: this.getTotalHps(),
             total_healing: { ...this.healingStats.stats },
             taken_damage: this.takenDamage,
-            profession: this.profession,
+            profession: this.profession + (this.subProfession ? `-${this.subProfession}` : ''),
             name: this.name,
             fightPoint: this.fightPoint,
         };
@@ -327,6 +373,21 @@ class UserData {
             };
         }
         return skills;
+    }
+
+    /** 设置职业
+     * @param {string} profession - 职业名称
+     * */
+    setProfession(profession) {
+        if (profession !== this.profession) this.setSubProfession('');
+        this.profession = profession;
+    }
+
+    /** 设置子职业
+     * @param {string} subProfession - 子职业名称
+     * */
+    setSubProfession(subProfession) {
+        this.subProfession = subProfession;
     }
 
     /** 设置姓名
