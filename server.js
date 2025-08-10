@@ -886,18 +886,24 @@ async function main() {
     };
 
     //抓包相关
+    const eth_queue = [];
     const c = new Cap();
     const device = devices[num].name;
     const filter = 'ip and tcp';
     const bufSize = 10 * 1024 * 1024;
     const buffer = Buffer.alloc(65535);
     const linkType = c.open(device, filter, bufSize, buffer);
+    if (linkType !== "ETHERNET") {
+        logger.error('WRONG DEVICE!');
+        process.exit(1);
+    }
     c.setMinBytes && c.setMinBytes(0);
     c.on("packet", async function (nbytes, trunc) {
+        eth_queue.push(Buffer.from(buffer));
+    });
+    const processEthPacket = async (frameBuffer) => {
         // logger.debug('packet: length ' + nbytes + ' bytes, truncated? ' + (trunc ? 'yes' : 'no'));
-        if (linkType !== "ETHERNET") return;
 
-        const frameBuffer = Buffer.from(buffer);
         var ethPacket = decoders.Ethernet(frameBuffer);
 
         if (ethPacket.info.type !== PROTOCOL.ETHERNET.IPV4) return;
@@ -1006,7 +1012,17 @@ async function main() {
             }
         }
         tcp_lock.release();
-    });
+    }
+    (async () => {
+        while (true) {
+            if (eth_queue.length) {
+                const pkt = eth_queue.shift();
+                processEthPacket(pkt);
+            } else {
+                await new Promise(r => setTimeout(r, 1));
+            }
+        }
+    })();
 
     //定时清理过期的IP分片缓存
     setInterval(async () => {
