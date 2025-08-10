@@ -319,7 +319,7 @@ class PacketProcessor {
             this.userDataManager.setName(playerUid, charBase.Name);
 
             if (!charBase.FightPoint) return;
-            this.userDataManager.setFightPoint(playerUid, charBase.FightPoint.toNumber());
+            this.userDataManager.setFightPoint(playerUid, charBase.FightPoint);
         } catch (err) {
             fs.writeFileSync('./SyncContainerData.dat', payloadBuffer);
             this.logger.warn(`Failed to decode SyncContainerData for player ${currentUserUuid.shiftRight(16)}. Please report to developer`);
