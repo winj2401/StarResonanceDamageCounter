@@ -53,7 +53,9 @@ class Lock {
 
 // 通用统计类，用于处理伤害或治疗数据
 class StatisticData {
-    constructor() {
+    constructor(user, type) {
+        this.user = user;
+        this.type = type || '';
         this.stats = {
             normal: 0,
             critical: 0,
@@ -184,8 +186,8 @@ class UserData {
     constructor(uid) {
         this.uid = uid;
         this.name = '';
-        this.damageStats = new StatisticData();
-        this.healingStats = new StatisticData();
+        this.damageStats = new StatisticData(this, '伤害');
+        this.healingStats = new StatisticData(this, '治疗');
         this.takenDamage = 0; // 承伤
         this.profession = '未知';
         this.skillUsage = new Map(); // 技能使用情况
@@ -203,19 +205,26 @@ class UserData {
         this.damageStats.addRecord(damage, isCrit, isLucky, hpLessenValue);
         // 记录技能使用情况
         if (!this.skillUsage.has(skillId)) {
-            this.skillUsage.set(skillId, new StatisticData());
+            this.skillUsage.set(skillId, new StatisticData(this, '伤害'));
         }
         this.skillUsage.get(skillId).addRecord(damage, isCrit, isLucky, hpLessenValue);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
     }
 
     /** 添加治疗记录
+     * @param {number} skillId - 技能ID/Buff ID
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
      */
-    addHealing(healing, isCrit, isLucky) {
+    addHealing(skillId, healing, isCrit, isLucky) {
         this.healingStats.addRecord(healing, isCrit, isLucky);
+        // 记录技能使用情况
+        if (!this.skillUsage.has(skillId)) {
+            this.skillUsage.set(skillId, new StatisticData(this, '治疗'));
+        }
+        this.skillUsage.get(skillId).addRecord(healing, isCrit, isLucky);
+        this.skillUsage.get(skillId).realtimeWindow.length = 0;
     }
 
     /** 添加承伤记录
@@ -291,24 +300,9 @@ class UserData {
             const cfg = skillConfig[skillId];
             const name = cfg ? cfg.name : skillId;
 
-            let type = '未知';
-            if (cfg) {
-                switch (cfg.type) {
-                    case 'damage':
-                        type = '伤害';
-                        break;
-                    case 'healing':
-                        type = '治疗';
-                        break;
-                    default:
-                        type = '未知';
-                        break;
-                }
-            }
-
             skills[skillId] = {
                 displayName: name,
-                type: type,
+                type: stat.type,
                 totalDamage: stat.stats.total,
                 totalCount: stat.count.total,
                 critCount: stat.count.critical,
@@ -453,13 +447,14 @@ class UserDataManager {
 
     /** 添加治疗记录
      * @param {number} uid - 进行治疗的用户ID
+     * @param {number} skillId - 技能ID/Buff ID
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
      */
-    addHealing(uid, healing, isCrit, isLucky) {
+    addHealing(uid, skillId, healing, isCrit, isLucky) {
         const user = this.getUser(uid);
-        user.addHealing(healing, isCrit, isLucky);
+        user.addHealing(skillId, healing, isCrit, isLucky);
     }
 
     /** 添加承伤记录
