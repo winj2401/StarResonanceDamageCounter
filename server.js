@@ -341,7 +341,6 @@ class UserData {
         this.damageStats.reset();
         this.healingStats.reset();
         this.takenDamage = 0;
-        this.profession = '未知';
         this.skillUsage.clear();
         this.fightPoint = 0;
     }
