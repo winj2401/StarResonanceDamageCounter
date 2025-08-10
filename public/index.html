@@ -987,7 +987,7 @@
                             <th class="healing-main-col" colspan="4">治疗</th>
                             <th class="healing-simple-col" style="display: none;" colspan="1">治疗</th>
                             <th class="hps-col" colspan="3">HPS</th>
-                            <th rowspan="2">技能分析</th>
+                            <th rowspan="2">操作</th>
                         </tr>
                         <tr>
                             <th class="damage-cols" title="角色在战斗中造成的总伤害">总伤害</th>
@@ -1205,7 +1205,7 @@
             // 更新用户信息
             document.getElementById('skillUserId').textContent = skillData.uid;
             document.getElementById('skillUserName').textContent = 
-                `${skillData.name || '未知玩家' } - 技能参与统计`;
+                `${skillData.name || `UID:${skillData.uid}` } - 技能分析`;
             document.getElementById('skillUserNickname').textContent = skillData.name;
             document.getElementById('skillUserProfession').textContent = skillData.profession;
             document.getElementById('skillCount').textContent = 
@@ -1770,14 +1770,14 @@
                     // 创建复制按钮
                     const copyButton = document.createElement('button');
                     copyButton.className = 'copy-btn';
-                    copyButton.innerHTML = '<i class="icon">📋</i> 复制';
+                    copyButton.innerHTML = '<i class="icon">📋</i> 复制数据';
                     copyButton.setAttribute('data-user-id', user.id);
                     skillButtonCell.appendChild(copyButton);
                     
                     // 创建技能按钮
                     const skillButton = document.createElement('button');
                     skillButton.className = 'skill-btn';
-                    skillButton.innerHTML = '<i class="icon">📊</i> 技能参与';
+                    skillButton.innerHTML = '<i class="icon">📊</i> 技能分析';
                     skillButton.setAttribute('data-user-id', user.id);
                     skillButtonCell.appendChild(skillButton);
                 }
