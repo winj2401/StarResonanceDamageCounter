@@ -1508,9 +1508,6 @@
         // 处理数据更新（WebSocket和API通用）
         function processDataUpdate(data, updateHistory = true) {
             try {
-                const damageTable = document.getElementById('damageTable').querySelector('tbody');
-                damageTable.innerHTML = '';
-                
                 // 将数据转换为数组以便排序
                 const userArray = Object.keys(data.user).map(id => ({
                     id: Number(id),
@@ -1554,38 +1551,41 @@
             }
         }
                 
-                // 生成表格行
+        // 生成表格行
         function updateTables(visibleUserArray) {
             const damageTable = document.getElementById('damageTable').querySelector('tbody');
-            damageTable.innerHTML = '';
-                for (const user of visibleUserArray) {
-                    const crit_rate = user.total_count.critical / user.total_count.total;
-                    const lucky_rate = user.total_count.lucky / user.total_count.total;
-                    
+            //获取damageTable里的所有行
+            let existingRows = damageTable.querySelectorAll('tr');
+            if (existingRows.length > visibleUserArray.length) {
+                // 移除多余的行
+                for (let i = existingRows.length - 1; i >= visibleUserArray.length; i--) {
+                    damageTable.removeChild(existingRows[i]);
+                }
+            }
+            if (existingRows.length < visibleUserArray.length) {
+                // 添加新行
+                for (let i = existingRows.length; i < visibleUserArray.length; i++) {
                     const row = document.createElement('tr');
+                    damageTable.appendChild(row);
+                }
+            }
+            existingRows = damageTable.querySelectorAll('tr');
+            
+            for (let i = 0; i < visibleUserArray.length; i++) {
+                const user = visibleUserArray[i];
+                const crit_rate = user.total_count.critical / user.total_count.total;
+                const lucky_rate = user.total_count.lucky / user.total_count.total;
+
+                const row = existingRows[i];
+
+                const isSimpleMode = document.body.classList.contains('simple-mode');
                     
-                    // 角色ID列
-                    const uidCell = document.createElement('td');
-                uidCell.textContent = `${user.id}`;
-                    row.appendChild(uidCell);
-                    
-                    // 角色昵称列
-                    const nicknameCell = document.createElement('td');
-                    // Check if user.name is a non-empty string
-                    const hasValidName = user.name && user.name.trim() !== '';
-                    const nickname = userNicknames[user.id] || (hasValidName ? user.name : '');
-                    
-                    nicknameCell.textContent = nickname;
-                    row.appendChild(nicknameCell);
-                    
-                    const isSimpleMode = document.body.classList.contains('simple-mode');
-                    
-                    // 其他数据列
-                    const otherCells = [
-                        user.profession || '未知',
-                        user.taken_damage,
-                        `${(crit_rate * 100).toFixed(2)}%`,
-                        `${(lucky_rate * 100).toFixed(2)}%`,
+                // 其他数据列
+                const otherCells = [
+                    user.profession || '未知',
+                    user.taken_damage,
+                    `${(crit_rate * 100).toFixed(2)}%`,
+                    `${(lucky_rate * 100).toFixed(2)}%`,
                 ];
                 if (currentDataGroup === 'damage' || currentDataGroup === 'all') {
                     otherCells.push(user.total_damage.total);
@@ -1617,23 +1617,56 @@
                         user.total_hps.toFixed(2),
                     );
                 }
-                    
-                    otherCells.forEach(cellData => {
+                let existingCells = row.querySelectorAll('td');
+                //所需展示的列数
+                const requiredColumnCount = 3 + otherCells.length;
+                if (existingCells.length > requiredColumnCount) {
+                    // 移除多余的单元格
+                    for (let j = existingCells.length - 1; j >= requiredColumnCount; j--) {
+                        row.removeChild(existingCells[j]);
+                    }
+                }
+                if (existingCells.length < requiredColumnCount) {
+                    // 添加新单元格
+                    for (let j = existingCells.length; j < requiredColumnCount; j++) {
                         const cell = document.createElement('td');
-                        cell.textContent = cellData;
                         row.appendChild(cell);
-                    });
+                    }
+                }
+                existingCells = row.querySelectorAll('td');
+                // 更新单元格内容
+                existingCells.forEach((cell, index) => {
+                    if (index < 2) return;
+                    if (otherCells[index - 2] !== undefined) {
+                        cell.textContent = otherCells[index - 2];
+                    }
+                });
 
-                    const skillCell = document.createElement('td');
+                // 角色ID列
+                const uidCell = existingCells[0];
+                uidCell.textContent = `${user.id}`;
+                    
+                // 角色昵称列
+                const nicknameCell = existingCells[1];
+                // Check if user.name is a non-empty string
+                const hasValidName = user.name && user.name.trim() !== '';
+                const nickname = userNicknames[user.id] || (hasValidName ? user.name : '');
+                    
+                nicknameCell.textContent = nickname;
+                const skillButtonCell = existingCells[existingCells.length - 1];
+                if (skillButtonCell.querySelector('.skill-btn')) {
+                    // 如果已经存在技能按钮，则只更新用户ID
+                    skillButtonCell.querySelector('.skill-btn').setAttribute('data-user-id', user.id);
+                } else {
+                    skillButtonCell.innerHTML = '';
+                    // 创建新的技能按钮
                     const skillButton = document.createElement('button');
                     skillButton.className = 'skill-btn';
                     skillButton.innerHTML = '<i class="icon">📊</i> 技能参与';
-                    skillButton.onclick = () => showSkillAnalysis(user.id);
-                    skillCell.appendChild(skillButton);
-                    row.appendChild(skillCell);
-                    
-                    damageTable.appendChild(row);
+                    skillButton.setAttribute('data-user-id', user.id);
+                    skillButtonCell.appendChild(skillButton);
                 }
+            }
         }
 
         async function fetchData() {
@@ -2631,6 +2664,22 @@
             
             // 只在初始化时获取一次数据，后续通过WebSocket接收
             fetchData();
+            
+            // 添加事件委托处理技能按钮点击
+            const damageTable = document.getElementById('damageTable');
+            if (damageTable) {
+                damageTable.addEventListener('click', function(event) {
+                    if (event.target.classList.contains('skill-btn') || 
+                        event.target.closest('.skill-btn')) {
+                        const button = event.target.classList.contains('skill-btn') ? 
+                            event.target : event.target.closest('.skill-btn');
+                        const userId = button.getAttribute('data-user-id');
+                        if (userId) {
+                            showSkillAnalysis(parseInt(userId));
+                        }
+                    }
+                });
+            }
         }
         
         // 等待DOM加载完成后初始化
