@@ -2795,14 +2795,16 @@
         }
     </script>
     <script>
-        window.onload = function(){
-        const damageTable = document.getElementById('damageTable');
-        const damageTableRows = damageTable.querySelectorAll('tr');
-        damageTableRows.forEach((row, index) => {
-                const height = row.offsetHeight;
-                row.style.setProperty('--th-top', `${index * height}px`);
+        function updateTableStickyHeader(){
+            const damageTable = document.getElementById('damageTable');
+            const damageTableRows = damageTable.querySelectorAll('tr');
+            damageTableRows.forEach((row) => {
+                const top = row.offsetTop
+                row.style.setProperty('--th-top', `${top}px`);
             });
         }
+        window.addEventListener('resize', updateTableStickyHeader);
+        document.addEventListener('DOMContentLoaded', updateTableStickyHeader);
     </script>
 </body>
 
