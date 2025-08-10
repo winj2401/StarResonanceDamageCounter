@@ -370,10 +370,31 @@
             transition: all 0.3s;
             font-weight: 500;
             font-size: 13px;
+            margin-left: 5px;
         }
         
         .skill-btn:hover {
             background: linear-gradient(45deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* 复制按钮样式 */
+        .copy-btn {
+            padding: 6px 12px;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 13px;
+            margin-right: 5px;
+        }
+        
+        .copy-btn:hover {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
@@ -1044,6 +1065,67 @@
             return Math.ceil(val / exp) * exp;
         }
         
+        // 复制用户数据
+        function copyUserData(userId) {
+            const user = getUserFromArray(userId);
+            if (!user) {
+                console.error('未找到用户数据');
+                return;
+            }
+            
+            const hasValidName = user.name && user.name.trim() !== '';
+            const nickname = userNicknames[userId] || (hasValidName ? user.name : '') || '';
+            const copyText = `${nickname}#${userId} 伤害:${user.total_damage.total} 治疗:${user.total_healing.total} DPS:${user.total_dps.toFixed(2)} HPS:${user.total_hps.toFixed(2)}`;
+
+            // 复制昵称到剪贴板
+            navigator.clipboard.writeText(copyText).then(() => {
+                // 显示复制成功提示
+                showCopySuccess();
+            }).catch(err => {
+                console.error('复制失败:', err);
+                // 降级方案：使用传统方法复制
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = copyText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showCopySuccess();
+                } catch (e) {
+                    console.error('降级复制方案也失败:', e);
+                }
+            });
+        }
+        
+        // 显示复制成功提示
+        function showCopySuccess() {
+            // 创建临时提示元素
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 4px;
+                z-index: 10000;
+                font-size: 14px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            `;
+            toast.textContent = '✅ 已复制用户数据';
+            document.body.appendChild(toast);
+            
+            // 3秒后移除提示
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+        
         // 显示技能分析弹窗
         async function showSkillAnalysis(userId) {
             currentSkillUserId = userId;
@@ -1657,9 +1739,18 @@
                 if (skillButtonCell.querySelector('.skill-btn')) {
                     // 如果已经存在技能按钮，则只更新用户ID
                     skillButtonCell.querySelector('.skill-btn').setAttribute('data-user-id', user.id);
+                    skillButtonCell.querySelector('.copy-btn').setAttribute('data-user-id', user.id);
                 } else {
                     skillButtonCell.innerHTML = '';
-                    // 创建新的技能按钮
+                    
+                    // 创建复制按钮
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'copy-btn';
+                    copyButton.innerHTML = '<i class="icon">📋</i> 复制';
+                    copyButton.setAttribute('data-user-id', user.id);
+                    skillButtonCell.appendChild(copyButton);
+                    
+                    // 创建技能按钮
                     const skillButton = document.createElement('button');
                     skillButton.className = 'skill-btn';
                     skillButton.innerHTML = '<i class="icon">📊</i> 技能参与';
@@ -2669,6 +2760,7 @@
             const damageTable = document.getElementById('damageTable');
             if (damageTable) {
                 damageTable.addEventListener('click', function(event) {
+                    // 处理技能按钮点击
                     if (event.target.classList.contains('skill-btn') || 
                         event.target.closest('.skill-btn')) {
                         const button = event.target.classList.contains('skill-btn') ? 
@@ -2676,6 +2768,16 @@
                         const userId = button.getAttribute('data-user-id');
                         if (userId) {
                             showSkillAnalysis(parseInt(userId));
+                        }
+                    }
+                    // 处理复制按钮点击
+                    else if (event.target.classList.contains('copy-btn') || 
+                        event.target.closest('.copy-btn')) {
+                        const button = event.target.classList.contains('copy-btn') ? 
+                            event.target : event.target.closest('.copy-btn');
+                        const userId = button.getAttribute('data-user-id');
+                        if (userId) {
+                            copyUserData(parseInt(userId));
                         }
                     }
                 });
