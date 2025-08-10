@@ -126,21 +126,6 @@
             transition: background-color 0.3s ease;
         }
 
-        .watermark {
-            pointer-events: none;
-            position: fixed;
-            top: -100vh;
-            left: -100vw;
-            width: 300vw;
-            height: 300vh;
-            z-index: 9999;
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" opacity="0.05"><text x="0" y="20" font-size="20">数据仅供参考</text></svg>');
-            display: flex;
-            transform: rotate(-30deg);
-            user-select: none;
-            transition: background-image 0.3s ease;
-        }
-
         /* 夜间模式样式 */
         .dark-mode {
             background-color: #1a1a1a !important;
@@ -216,10 +201,6 @@
 
         .dark-mode footer a {
             color: #4fc3f7 !important;
-        }
-
-        .dark-mode .watermark {
-            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="100" opacity="0.08"><text x="0" y="20" font-size="20" fill="white">数据仅供参考</text></svg>') !important;
         }
 
         .dark-mode select {
@@ -1010,8 +991,6 @@
                 </table>
             </div>
         </div>
-
-    <div class="watermark"></div>
 
     <footer style="margin-top: 40px; font-size: 14px; color: #888;">
         <span>© 2025 Made with ❤️ by </span>
