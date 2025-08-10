@@ -2173,28 +2173,55 @@
                 // 构建数据数组
                 const data = new Array(dataLength).fill(null);
                 
-                // 填充真实数据点
+                // 填充真实数据点 - 稳定化时间映射
                 const timeStep = performanceMode ? 200 : 100;
+                
+                // 使用固定时间基准，避免滚动时索引抖动
+                const baseTime = Math.floor(currentTime / timeStep) * timeStep;
+                
                 history.forEach(point => {
-                    const timeAgo = currentTime - point.time;
+                    const timeAgo = baseTime - point.time;
                     const dataIndex = dataLength - 1 - Math.floor(timeAgo / timeStep);
                     if (dataIndex >= 0 && dataIndex < dataLength) {
-                        data[dataIndex] = point.dps;
+                        // 如果该位置已有数据，取最大值避免覆盖峰值
+                        if (data[dataIndex] === null) {
+                            data[dataIndex] = point.dps;
+                        } else {
+                            data[dataIndex] = Math.max(data[dataIndex], point.dps);
+                        }
                     }
                 });
                 
-                // 平滑处理 - 避免突兀的断线
+                // 数据稳定化处理 - 减少蠕动和跳跃
                 if (!performanceMode) {
+                    // 1. 峰值保护：避免相邻点的峰值跳跃
+                    for (let i = 1; i < data.length - 1; i++) {
+                        if (data[i] !== null && data[i-1] !== null && data[i+1] !== null) {
+                            // 如果当前点明显偏离趋势，平滑处理
+                            const avg = (data[i-1] + data[i+1]) / 2;
+                            if (Math.abs(data[i] - avg) > avg * 0.3 && data[i] < avg) {
+                                data[i] = Math.max(data[i], avg * 0.8);
+                            }
+                        }
+                    }
+                    
+                    // 2. 填充小间隔，保持连续性
                     for (let i = 1; i < data.length; i++) {
                         if (data[i] === null && data[i-1] !== null) {
-                            // 查找间隔长度
-                            let gapLength = 0;
-                            for (let j = i; j < Math.min(i + 10, data.length); j++) {
-                                if (data[j] !== null) break;
-                                gapLength++;
+                            // 短间隔用渐变填充，避免突然断线
+                            let nextIndex = -1;
+                            for (let j = i + 1; j < Math.min(i + 3, data.length); j++) {
+                                if (data[j] !== null) {
+                                    nextIndex = j;
+                                    break;
+                                }
                             }
-                            // 短间隔保持水平线，避免视觉断裂
-                            if (gapLength <= 5) {
+                            if (nextIndex !== -1 && nextIndex - i <= 2) {
+                                // 线性插值填充
+                                const step = (data[nextIndex] - data[i-1]) / (nextIndex - i + 1);
+                                data[i] = data[i-1] + step;
+                            } else {
+                                // 保持前值
                                 data[i] = data[i-1];
                             }
                         }
@@ -2234,9 +2261,9 @@
                         type: 'line',
                         data: data,
                         symbol: 'none',
-                        smooth: 0.15,
+                        smooth: false, // 完全关闭平滑避免形态抖动
                         connectNulls: false,
-                        sampling: 'lttb',
+                        sampling: false, // 关闭采样避免峰值游移
                         animation: false,
                         silent: false,
                         lineStyle: {
