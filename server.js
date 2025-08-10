@@ -615,13 +615,13 @@ async function main() {
 
     // 进程退出时保存用户缓存
     process.on('SIGINT', () => {
-        console.log('\n正在保存用户缓存...');
+        console.log('\nSaving user cache...');
         userDataManager.forceUserCacheSave();
         process.exit(0);
     });
 
     process.on('SIGTERM', () => {
-        console.log('\n正在保存用户缓存...');
+        console.log('\nSaving user cache...');
         userDataManager.forceUserCacheSave();
         process.exit(0);
     });
