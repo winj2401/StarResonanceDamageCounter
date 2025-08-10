@@ -355,7 +355,7 @@ class UserDataManager {
         this.userCache = new Map(); // 用户名字和职业缓存
         this.cacheFilePath = './users.json';
         this.loadUserCache();
-        
+
         // 节流相关配置
         this.saveThrottleDelay = 2000; // 2秒节流延迟，避免频繁磁盘写入
         this.saveThrottleTimer = null;
@@ -516,11 +516,11 @@ class UserDataManager {
      * @param {number} uid - 用户ID
      * @param {number} fightPoint - 总评分
     */
-   setFightPoint(uid, fightPoint) {
-       const user = this.getUser(uid);
-       if (user.fightPoint != fightPoint) {
-           user.setFightPoint(fightPoint);
-           this.logger.info(`Found fight point ${fightPoint} for uid ${uid}`);
+    setFightPoint(uid, fightPoint) {
+        const user = this.getUser(uid);
+        if (user.fightPoint != fightPoint) {
+            user.setFightPoint(fightPoint);
+            this.logger.info(`Found fight point ${fightPoint} for uid ${uid}`);
         }
     }
 
@@ -618,8 +618,8 @@ async function main() {
     });
 
     const userDataManager = new UserDataManager(logger);
-  
-      // 进程退出时保存用户缓存
+
+    // 进程退出时保存用户缓存
     process.on('SIGINT', () => {
         console.log('\n正在保存用户缓存...');
         userDataManager.forceUserCacheSave();
@@ -753,7 +753,7 @@ async function main() {
     const FRAGMENT_TIMEOUT = 30000;
     const getTCPPacket = (frameBuffer, ethOffset) => {
         const ipPacket = decoders.IPV4(frameBuffer, ethOffset);
-        const ipId = `${ipPacket.info.id}-${ipPacket.info.srcaddr}-${ipPacket.info.dstaddr}`;
+        const ipId = ipPacket.info.id;
         const isFragment = (ipPacket.info.flags & 0x1) !== 0;
         const _key = `${ipId}-${ipPacket.info.srcaddr}-${ipPacket.info.dstaddr}-${ipPacket.info.protocol}`;
         const now = Date.now();
@@ -793,7 +793,7 @@ async function main() {
                 const fragmentOffset = ip.info.fragoffset * 8;
                 const payloadLength = ip.info.totallen - ip.hdrlen;
                 const payload = Buffer.from(buffer.subarray(ip.offset, ip.offset + payloadLength));
-                
+
                 fragmentData.push({
                     offset: fragmentOffset,
                     payload: payload
