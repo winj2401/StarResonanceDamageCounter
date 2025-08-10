@@ -206,6 +206,9 @@
 
 欢迎提交 Issue 和 Pull Request 来改进项目！
 
+### 贡献者名单
+[![Contributors](https://contrib.rocks/image?repo=dmlgzs/StarResonanceDamageCounter)](https://github.com/dmlgzs/StarResonanceDamageCounter/graphs/contributors "Contributors")
+
 ## ⭐ 支持
 
 如果这个项目对您有帮助，请给它一个 Star ⭐
