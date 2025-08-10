@@ -2368,10 +2368,10 @@
                 ...(xAxisChanged ? { 
                     xAxis: { 
                         data: xAxisData,
-                        axisLine: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
-                        axisTick: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
-                        axisLabel: { color: 'rgba(220,220,220,0.65)' },
-                        splitLine: { show: true, lineStyle: { color: 'rgba(200,200,200,0.12)', type: 'dashed' } }
+                        axisLine: { lineStyle: { color: document.body.classList.contains('dark-mode') ? 'rgba(180,180,180,0.25)' : 'rgba(100,100,100,0.4)' } },
+                        axisTick: { lineStyle: { color: document.body.classList.contains('dark-mode') ? 'rgba(180,180,180,0.25)' : 'rgba(100,100,100,0.4)' } },
+                        axisLabel: { color: document.body.classList.contains('dark-mode') ? 'rgba(220,220,220,0.65)' : 'rgba(60,60,60,0.8)' },
+                        splitLine: { show: true, lineStyle: { color: document.body.classList.contains('dark-mode') ? 'rgba(200,200,200,0.12)' : 'rgba(150,150,150,0.3)', type: 'dashed' } }
                     } 
                 } : {}),
                 series: updatedSeries,
@@ -2386,17 +2386,17 @@
                     type: 'value',
                     name: 'DPS',
                     nameTextStyle: {
-                        color: document.body.classList.contains('dark-mode') ? 'rgba(220,220,220,0.8)' : '#666',
+                        color: document.body.classList.contains('dark-mode') ? 'rgba(220,220,220,0.8)' : '#333',
                         fontSize: 12
                     },
                     min: 0,
                     max: curTop,
                     splitNumber: 6,
                     animation: false,
-                    axisLine: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
-                    axisTick: { lineStyle: { color: 'rgba(180,180,180,0.25)' } },
+                    axisLine: { lineStyle: { color: document.body.classList.contains('dark-mode') ? 'rgba(180,180,180,0.25)' : 'rgba(100,100,100,0.4)' } },
+                    axisTick: { lineStyle: { color: document.body.classList.contains('dark-mode') ? 'rgba(180,180,180,0.25)' : 'rgba(100,100,100,0.4)' } },
                     axisLabel: {
-                        color: 'rgba(220,220,220,0.65)',
+                        color: document.body.classList.contains('dark-mode') ? 'rgba(220,220,220,0.65)' : 'rgba(60,60,60,0.8)',
                         fontSize: 11,
                         formatter: function(value) {
                             if (value >= 1000) {
@@ -2405,12 +2405,12 @@
                             return value;
                         }
                     },
-                    splitLine: { lineStyle: { color: 'rgba(200,200,200,0.12)', type: 'dashed' } }
+                    splitLine: { lineStyle: { color: document.body.classList.contains('dark-mode') ? 'rgba(200,200,200,0.12)' : 'rgba(150,150,150,0.3)', type: 'dashed' } }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(32,32,40,0.92)',
-                    borderColor: 'rgba(255,255,255,0.12)',
-                    textStyle: { color: '#EEE' }
+                    backgroundColor: document.body.classList.contains('dark-mode') ? 'rgba(32,32,40,0.92)' : 'rgba(255,255,255,0.95)',
+                    borderColor: document.body.classList.contains('dark-mode') ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)',
+                    textStyle: { color: document.body.classList.contains('dark-mode') ? '#EEE' : '#333' }
                 },
                 grid: { left: 56, right: '4%', bottom: '8%', top: '15%', containLabel: true }
             }, false, true);
