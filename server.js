@@ -2,6 +2,7 @@ const cap = require('cap');
 const cors = require('cors');
 const readline = require('readline');
 const winston = require("winston");
+const zlib = require('zlib');
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -1079,6 +1080,13 @@ async function main() {
             clearTcpCache();
         }
     }, 10000);
+}
+
+if (!zlib.zstdDecompressSync) {
+    // 之前总是有人用旧版本nodejs，不看警告还说数据不准，现在干脆不让旧版用算了
+    // 还有人对着开源代码写闭源，不遵守许可就算了，还要诋毁开源，什么人啊这是
+    print("zstdDecompressSync is not available! Please update your Node.js!");
+    process.exit(1);
 }
 
 main();
