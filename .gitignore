@@ -3,3 +3,4 @@ bak/
 .vscode
 users.json
 SyncContainerData.dat
+dist/
