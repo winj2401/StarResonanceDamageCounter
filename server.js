@@ -541,10 +541,19 @@ class UserDataManager {
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
+     * @param {number} targetUid - 被治疗的用户ID
      */
-    addHealing(uid, skillId, healing, isCrit, isLucky) {
+    addHealing(uid, skillId, healing, isCrit, isLucky, targetUid) {
         const user = this.getUser(uid);
         user.addHealing(skillId, healing, isCrit, isLucky);
+        const targetUser = this.getUser(targetUid);
+        if (targetUser.attr.hp && typeof targetUser.attr.hp == 'number') {
+            if (targetUser.attr.max_hp && targetUser.attr.max_hp - targetUser.attr.hp < healing) {
+                targetUser.attr.hp = targetUser.attr.max_hp;
+            } else {
+                targetUser.attr.hp += healing;
+            }
+        }
     }
 
     /** 添加承伤记录
@@ -554,6 +563,9 @@ class UserDataManager {
     addTakenDamage(uid, damage) {
         const user = this.getUser(uid);
         user.addTakenDamage(damage);
+        if (user.attr.hp && typeof user.attr.hp == 'number') {
+            user.attr.hp = damage > user.attr.hp ? 0 : user.attr.hp - damage;
+        }
     }
 
     /** 设置用户职业
