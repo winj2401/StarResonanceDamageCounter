@@ -94,6 +94,16 @@ const AttrType = {
     AttrName: 0x01,
     AttrProfessionId: 0xdc,
     AttrFightPoint: 0x272e,
+    AttrLevel: 0x2710,
+    AttrRankLevel: 0x274c,
+    AttrCri: 0x2b66,
+    AttrLucky: 0x2b7a,
+    AttrHp: 0x2c2e,
+    AttrMaxHp: 0x2c38,
+    AttrElementFlag: 0x646d6c,
+    AttrReductionLevel: 0x64696d,
+    AttrReduntionId: 0x6f6c65,
+    AttrEnergyFlag: 0x543cd3c6,
 };
 
 const ProfessionType = {
@@ -407,8 +417,44 @@ class PacketProcessor {
                         const playerFightPoint = reader.int32();
                         this.userDataManager.setFightPoint(playerUuid.toNumber(), playerFightPoint);
                         break;
+                    case AttrType.AttrLevel:
+                        const playerLevel = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'level', playerLevel);
+                        break;
+                    case AttrType.AttrRankLevel:
+                        const playerRankLevel = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'rank_level', playerRankLevel);
+                        break;
+                    case AttrType.AttrCri:
+                        const playerCri = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'cri', playerCri);
+                        break;
+                    case AttrType.AttrLucky:
+                        const playerLucky = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'lucky', playerLucky);
+                        break;
+                    case AttrType.AttrHp:
+                        const playerHp = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'hp', playerHp);
+                        break;
+                    case AttrType.AttrMaxHp:
+                        const playerMaxHp = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'max_hp', playerMaxHp);
+                        break;
+                    case AttrType.AttrElementFlag:
+                        const playerElementFlag = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'element_flag', playerElementFlag);
+                        break;
+                    case AttrType.AttrEnergyFlag:
+                        const playerEnergyFlag = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'energy_flag', playerEnergyFlag);
+                        break;
+                    case AttrType.AttrReductionLevel:
+                        const playerReductionLevel = reader.int32();
+                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'reduction_level', playerReductionLevel);
+                        break;
                     default:
-                        // this.logger.debug(`Found unknown attrId ${attr.Id}`);
+                        this.logger.debug(`Found unknown attrId ${attr.Id} ${attr.RawData.toString('base64')}`);
                         break;
                 }
             }

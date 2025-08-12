@@ -249,6 +249,7 @@ class UserData {
         this.skillUsage = new Map(); // 技能使用情况
         this.fightPoint = 0; // 总评分
         this.subProfession = '';
+        this.attr = {};
     }
 
     /** 添加伤害记录
@@ -405,6 +406,14 @@ class UserData {
      */
     setFightPoint(fightPoint) {
         this.fightPoint = fightPoint;
+    }
+
+    /** 设置额外数据
+     * @param {string} key
+     * @param {any} value
+     */
+    setAttrKV(key, value) {
+        this.attr[key] = value;
     }
 
     /** 重置数据 预留 */
@@ -606,6 +615,16 @@ class UserDataManager {
         }
     }
 
+    /** 设置额外数据
+     * @param {number} uid - 用户ID
+     * @param {string} key
+     * @param {any} value
+     */
+    setAttrKV(uid, key, value) {
+        const user = this.getUser(uid);
+        user.attr[key] = value;
+    }
+
     /** 更新所有用户的实时DPS和HPS */
     updateAllRealtimeDps() {
         for (const user of this.users.values()) {
@@ -622,7 +641,8 @@ class UserDataManager {
             uid: user.uid,
             name: user.name,
             profession: user.profession,
-            skills: user.getSkillSummary()
+            skills: user.getSkillSummary(),
+            attr: user.attr,
         };
     }
 
