@@ -37,6 +37,12 @@ class BinaryReader {
         return value;
     }
 
+    readUInt32LE() {
+        const value = this.buffer.readUInt32LE(this.offset);
+        this.offset += 4;
+        return value;
+    }
+
     peekInt32() {
         return this.buffer.readInt32BE(this.offset);
     }
@@ -154,17 +160,17 @@ const isUuidPlayer = (uuid) => {
 };
 
 const doesStreamHaveIdentifier = (reader) => {
-    let identifier = reader.readInt32();
+    let identifier = reader.readUInt32LE();
     reader.readInt32();
     if (identifier !== 0xfffffffe) return false;
     identifier = reader.readInt32();
     reader.readInt32();
-    if (identifier !== 0xfffffffd) return false;
+    //if (identifier !== 0xfffffffd) return false;
     return true;
 };
 
 const streamReadString = (reader) => {
-    const length = reader.readInt32();
+    const length = reader.readUInt32LE();
     reader.readInt32();
     const buffer = reader.readBytes(length);
     reader.readInt32();
@@ -358,17 +364,18 @@ class PacketProcessor {
 
         const syncContainerDirtyData = pb.SyncContainerDirtyData.decode(payloadBuffer);
         if (!syncContainerDirtyData.VData || !syncContainerDirtyData.VData.Buffer) return;
+        this.logger.debug(syncContainerDirtyData.VData.Buffer.toString('hex'));
         const messageReader = new BinaryReader(Buffer.from(syncContainerDirtyData.VData.Buffer));
 
         if (!doesStreamHaveIdentifier(messageReader)) return;
 
-        let fieldIndex = messageReader.readInt32();
+        let fieldIndex = messageReader.readUInt32LE();
         messageReader.readInt32();
         switch (fieldIndex) {
             case 2: // CharBase
                 if (!doesStreamHaveIdentifier(messageReader)) break;
 
-                fieldIndex = messageReader.readInt32();
+                fieldIndex = messageReader.readUInt32LE();
                 messageReader.readInt32();
                 switch (fieldIndex) {
                     case 5: // Name
@@ -377,7 +384,7 @@ class PacketProcessor {
                         this.userDataManager.setName(currentUserUuid.shiftRight(16).toNumber(), playerName);
                         break;
                     case 35: // FightPoint
-                        const fightPoint = messageReader.readInt32();
+                        const fightPoint = messageReader.readUInt32LE();
                         messageReader.readInt32();
                         this.userDataManager.setFightPoint(currentUserUuid.shiftRight(16).toNumber(), fightPoint);
                         break;
@@ -386,19 +393,36 @@ class PacketProcessor {
                         break;
                 }
                 break;
-            case 16: //UserFightAttr seems not work
+            case 16: // UserFightAttr
                 if (!doesStreamHaveIdentifier(messageReader)) break;
 
-                fieldIndex = messageReader.readInt32();
+                fieldIndex = messageReader.readUInt32LE();
                 messageReader.readInt32();
                 switch (fieldIndex) {
                     case 1: // CurHp
-                        const curHp = messageReader.readUInt64();
-                        this.userDataManager.setAttrKV(currentUserUuid.shiftRight(16).toNumber(), 'hp', curHp.toNumber());
+                        const curHp = messageReader.readUInt32LE();
+                        this.userDataManager.setAttrKV(currentUserUuid.shiftRight(16).toNumber(), 'hp', curHp);
                         break;
                     case 2: // MaxHp
-                        const maxHp = messageReader.readUInt64();
-                        this.userDataManager.setAttrKV(currentUserUuid.shiftRight(16).toNumber(), 'max_hp', maxHp.toNumber());
+                        const maxHp = messageReader.readUInt32LE();
+                        this.userDataManager.setAttrKV(currentUserUuid.shiftRight(16).toNumber(), 'max_hp', maxHp);
+                        break;
+                    default:
+                        // unhandle
+                        break;
+                }
+                break;
+            case 61: // ProfessionList
+                if (!doesStreamHaveIdentifier(messageReader)) break;
+
+                fieldIndex = messageReader.readUInt32LE();
+                messageReader.readInt32();
+                switch (fieldIndex) {
+                    case 1: // CurProfessionId
+                        const curProfessionId = messageReader.readUInt32LE();
+                        messageReader.readInt32();
+                        if (curProfessionId)
+                            this.userDataManager.setProfession(currentUserUuid.shiftRight(16).toNumber(), getProfessionNameFromId(curProfessionId));
                         break;
                     default:
                         // unhandle
