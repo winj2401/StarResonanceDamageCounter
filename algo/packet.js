@@ -326,6 +326,13 @@ class PacketProcessor {
             if (vData.RoleLevel && vData.RoleLevel.Level)
                 this.userDataManager.setAttrKV(playerUid, 'level', vData.RoleLevel.Level);
 
+            if (vData.Attr && vData.Attr.CurHp)
+                this.userDataManager.setAttrKV(playerUid, 'hp', vData.Attr.CurHp.toNumber());
+
+            if (vData.Attr && vData.Attr.MaxHp)
+                this.userDataManager.setAttrKV(playerUid, 'max_hp', vData.Attr.MaxHp.toNumber());
+
+
             if (!vData.CharBase) return;
             const charBase = vData.CharBase;
 
@@ -373,6 +380,25 @@ class PacketProcessor {
                         const fightPoint = messageReader.readInt32();
                         messageReader.readInt32();
                         this.userDataManager.setFightPoint(currentUserUuid.shiftRight(16).toNumber(), fightPoint);
+                        break;
+                    default:
+                        // unhandle
+                        break;
+                }
+                break;
+            case 16: //UserFightAttr seems not work
+                if (!doesStreamHaveIdentifier(messageReader)) break;
+
+                fieldIndex = messageReader.readInt32();
+                messageReader.readInt32();
+                switch (fieldIndex) {
+                    case 1: // CurHp
+                        const curHp = messageReader.readUInt64();
+                        this.userDataManager.setAttrKV(currentUserUuid.shiftRight(16).toNumber(), 'hp', curHp.toNumber());
+                        break;
+                    case 2: // MaxHp
+                        const maxHp = messageReader.readUInt64();
+                        this.userDataManager.setAttrKV(currentUserUuid.shiftRight(16).toNumber(), 'max_hp', maxHp.toNumber());
                         break;
                     default:
                         // unhandle
