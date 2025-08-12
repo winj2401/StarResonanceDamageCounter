@@ -344,6 +344,7 @@ class UserData {
             profession: this.profession + (this.subProfession ? `-${this.subProfession}` : ''),
             name: this.name,
             fightPoint: this.fightPoint,
+            hp: this.attr.hp,
         };
     }
 
