@@ -315,12 +315,16 @@ class PacketProcessor {
         try {
             const syncContainerData = pb.SyncContainerData.decode(payloadBuffer);
             // this.logger.debug(JSON.stringify(syncContainerData, null, 2));
+            // fs.writeFileSync('SyncContainerData.json', JSON.stringify(syncContainerData, null, 2));
 
             if (!syncContainerData.VData) return;
             const vData = syncContainerData.VData;
 
             if (!vData.CharId) return;
             const playerUid = vData.CharId.toNumber();
+
+            if (vData.RoleLevel && vData.RoleLevel.Level)
+                this.userDataManager.setAttrKV(playerUid, 'level', vData.RoleLevel.Level);
 
             if (!vData.CharBase) return;
             const charBase = vData.CharBase;
@@ -454,7 +458,7 @@ class PacketProcessor {
                         this.userDataManager.setAttrKV(playerUuid.toNumber(), 'reduction_level', playerReductionLevel);
                         break;
                     default:
-                        this.logger.debug(`Found unknown attrId ${attr.Id} ${attr.RawData.toString('base64')}`);
+                        // this.logger.debug(`Found unknown attrId ${attr.Id} ${attr.RawData.toString('base64')}`);
                         break;
                 }
             }
