@@ -345,6 +345,7 @@ class UserData {
             name: this.name,
             fightPoint: this.fightPoint,
             hp: this.attr.hp,
+            max_hp: this.attr.max_hp,
         };
     }
 

@@ -955,6 +955,7 @@
                     <option value="healing">按总治疗排序 (降序)</option>
                     <option value="hps">按总HPS排序 (降序)</option>
                     <option value="realtimeHpsMax">按最大瞬时HPS排序 (降序)</option>
+                    <option value="hp_min">按剩余HP排序 (升序)</option>
                 </select>
             </div>
             <!-- 数据组显示控制 -->
@@ -1841,6 +1842,9 @@
                     break;
                 case 'fightPoint':
                     userArray.sort((a, b) => b.fightPoint - a.fightPoint);
+                    break;
+                case 'hp_min':
+                    userArray.sort((a, b) => a.hp - b.hp);
                     break;
                 default:
                     userArray.sort((a, b) => a.id - b.id);
