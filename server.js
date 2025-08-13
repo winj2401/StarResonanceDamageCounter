@@ -1,7 +1,7 @@
 const cap = require('cap');
 const cors = require('cors');
 const readline = require('readline');
-const winston = require("winston");
+const winston = require('winston');
 const zlib = require('zlib');
 const express = require('express');
 const http = require('http');
@@ -10,7 +10,7 @@ const path = require('path');
 const { Server } = require('socket.io');
 const fs = require('fs');
 const PacketProcessor = require('./algo/packet');
-const Readable = require("stream").Readable;
+const Readable = require('stream').Readable;
 const Cap = cap.Cap;
 const decoders = cap.decoders;
 const PROTOCOL = decoders.PROTOCOL;
@@ -20,24 +20,24 @@ const { exec } = require('child_process');
 
 const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
 });
 const devices = cap.deviceList();
 
 const elementMap = {
-        fire: '🔥火',
-        ice: '❄️冰',
-        thunder: '⚡雷',
-        earth: '🍀森',
-        wind: '💨风',
-        light: '✨光',
-        dark: '🌙暗',
-        physics: '⚔️'
+    fire: '🔥火',
+    ice: '❄️冰',
+    thunder: '⚡雷',
+    earth: '🍀森',
+    wind: '💨风',
+    light: '✨光',
+    dark: '🌙暗',
+    physics: '⚔️',
 };
 
 function ask(question) {
-    return new Promise(resolve => {
-        rl.question(question, answer => {
+    return new Promise((resolve) => {
+        rl.question(question, (answer) => {
             resolve(answer);
         });
     });
@@ -209,7 +209,7 @@ class StatisticData {
         if (!this.timeRange[0] || !this.timeRange[1]) {
             return 0;
         }
-        const totalPerSecond = (this.stats.total / (this.timeRange[1] - this.timeRange[0]) * 1000) || 0;
+        const totalPerSecond = (this.stats.total / (this.timeRange[1] - this.timeRange[0])) * 1000 || 0;
         if (!Number.isFinite(totalPerSecond)) return 0;
         return totalPerSecond;
     }
@@ -354,8 +354,7 @@ class UserData {
     getSkillSummary() {
         const skills = {};
         for (const [skillId, stat] of this.skillUsage) {
-            const total = stat.stats.normal + stat.stats.critical +
-                stat.stats.lucky + stat.stats.crit_lucky;
+            const total = stat.stats.normal + stat.stats.critical + stat.stats.lucky + stat.stats.crit_lucky;
             const critCount = stat.count.critical;
             const luckyCount = stat.count.lucky;
             const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
@@ -363,7 +362,7 @@ class UserData {
             const skillConfig = require('./skill_config.json').skills;
             const cfg = skillConfig[skillId];
             const name = cfg ? cfg.name : skillId;
-            const elementype = elementMap[cfg?.element] ?? "";
+            const elementype = elementMap[cfg?.element] ?? '';
 
             skills[skillId] = {
                 displayName: name,
@@ -376,7 +375,7 @@ class UserData {
                 critRate: critRate,
                 luckyRate: luckyRate,
                 damageBreakdown: { ...stat.stats },
-                countBreakdown: { ...stat.count }
+                countBreakdown: { ...stat.count },
             };
         }
         return skills;
@@ -432,7 +431,7 @@ class UserData {
 // 用户数据管理器
 class UserDataManager {
     constructor(logger) {
-        this.logger = logger
+        this.logger = logger;
         this.users = new Map();
         this.userCache = new Map(); // 用户名字和职业缓存
         this.cacheFilePath = './users.json';
@@ -613,7 +612,7 @@ class UserDataManager {
     /** 设置用户总评分
      * @param {number} uid - 用户ID
      * @param {number} fightPoint - 总评分
-    */
+     */
     setFightPoint(uid, fightPoint) {
         const user = this.getUser(uid);
         if (user.fightPoint != fightPoint) {
@@ -709,10 +708,9 @@ async function main() {
             print('Cannot find device ' + num + '!');
             process.exit(1);
         }
-
     }
     if (log_level === undefined || !isValidLogLevel(log_level)) {
-        log_level = await ask('Please enter log level (info|debug): ') || 'info';
+        log_level = (await ask('Please enter log level (info|debug): ')) || 'info';
         if (!isValidLogLevel(log_level)) {
             print('Invalid log level!');
             process.exit(1);
@@ -725,13 +723,11 @@ async function main() {
         format: winston.format.combine(
             winston.format.colorize({ all: true }),
             winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-            winston.format.printf(info => {
+            winston.format.printf((info) => {
                 return `[${info.timestamp}] [${info.level}] ${info.message}`;
-            })
+            }),
         ),
-        transports: [
-            new winston.transports.Console()
-        ]
+        transports: [new winston.transports.Console()],
     });
 
     const userDataManager = new UserDataManager(logger);
@@ -763,9 +759,9 @@ async function main() {
     const server = http.createServer(app);
     const io = new Server(server, {
         cors: {
-            origin: "*",
-            methods: ["GET", "POST"]
-        }
+            origin: '*',
+            methods: ['GET', 'POST'],
+        },
     });
 
     app.get('/api/data', (req, res) => {
@@ -793,7 +789,7 @@ async function main() {
         res.json({
             code: 0,
             msg: `Statistics ${isPaused ? 'paused' : 'resumed'}!`,
-            paused: isPaused
+            paused: isPaused,
         });
     });
 
@@ -801,7 +797,7 @@ async function main() {
     app.get('/api/pause', (req, res) => {
         res.json({
             code: 0,
-            paused: isPaused
+            paused: isPaused,
         });
     });
 
@@ -813,13 +809,13 @@ async function main() {
         if (!skillData) {
             return res.status(404).json({
                 code: 1,
-                msg: 'User not found'
+                msg: 'User not found',
             });
         }
 
         res.json({
             code: 0,
-            data: skillData
+            data: skillData,
         });
     });
 
@@ -853,7 +849,7 @@ async function main() {
             });
             server.listen(port);
         });
-    }
+    };
     let server_port = 8989;
     while (true) {
         if (await checkPort(server_port)) break;
@@ -866,7 +862,6 @@ async function main() {
         logger.info(`Web Server started at ${url}`);
         logger.info('WebSocket Server started');
 
-        
         let command;
         switch (process.platform) {
             case 'darwin': // macOS
@@ -917,7 +912,7 @@ async function main() {
             if (!fragmentIpCache.has(_key)) {
                 fragmentIpCache.set(_key, {
                     fragments: [],
-                    timestamp: now
+                    timestamp: now,
                 });
             }
 
@@ -951,7 +946,7 @@ async function main() {
 
                 fragmentData.push({
                     offset: fragmentOffset,
-                    payload: payload
+                    payload: payload,
                 });
 
                 const endOffset = fragmentOffset + payloadLength;
@@ -980,12 +975,12 @@ async function main() {
     const bufSize = 10 * 1024 * 1024;
     const buffer = Buffer.alloc(65535);
     const linkType = c.open(device, filter, bufSize, buffer);
-    if (linkType !== "ETHERNET") {
+    if (linkType !== 'ETHERNET') {
         logger.error('WRONG DEVICE!');
         process.exit(1);
     }
     c.setMinBytes && c.setMinBytes(0);
-    c.on("packet", async function (nbytes, trunc) {
+    c.on('packet', async function (nbytes, trunc) {
         eth_queue.push(Buffer.from(buffer));
     });
     const processEthPacket = async (frameBuffer) => {
@@ -1008,7 +1003,7 @@ async function main() {
         //logger.debug(' from port: ' + tcpPacket.info.srcport + ' to port: ' + tcpPacket.info.dstport);
         const srcport = tcpPacket.info.srcport;
         const dstport = tcpPacket.info.dstport;
-        const src_server = srcaddr + ":" + srcport + " -> " + dstaddr + ":" + dstport;
+        const src_server = srcaddr + ':' + srcport + ' -> ' + dstaddr + ':' + dstport;
 
         await tcp_lock.acquire();
         if (current_server !== src_server) {
@@ -1030,9 +1025,9 @@ async function main() {
                                     current_server = src_server;
                                     clearTcpCache();
                                     tcp_next_seq = tcpPacket.info.seqno + buf.length;
-                                    logger.info("Got Scene Server Address: " + src_server);
+                                    logger.info('Got Scene Server Address: ' + src_server);
                                 }
-                            } catch (e) { }
+                            } catch (e) {}
                         } while (data1 && data1.length);
                     }
                 }
@@ -1047,30 +1042,32 @@ async function main() {
                         0x00, 0x00, 0x00, 0x00,
                         0x0a, 0x4e, 0x08, 0x01, 0x22, 0x24
                     ]);
-                    if (Buffer.compare(buf.subarray(0, 10), signature.subarray(0, 10)) === 0 &&
-                        Buffer.compare(buf.subarray(14, 14 + 6), signature.subarray(14, 14 + 6)) === 0) {
+                    if (
+                        Buffer.compare(buf.subarray(0, 10), signature.subarray(0, 10)) === 0 &&
+                        Buffer.compare(buf.subarray(14, 14 + 6), signature.subarray(14, 14 + 6)) === 0
+                    ) {
                         if (current_server !== src_server) {
                             current_server = src_server;
                             clearTcpCache();
                             tcp_next_seq = tcpPacket.info.seqno + buf.length;
-                            logger.info("Got Scene Server Address by Login Return Packet: " + src_server);
+                            logger.info('Got Scene Server Address by Login Return Packet: ' + src_server);
                         }
                     }
                 }
-            } catch (e) { }
+            } catch (e) {}
             tcp_lock.release();
             return;
         }
         // logger.debug(`packet seq ${tcpPacket.info.seqno >>> 0} size ${buf.length} expected next seq ${((tcpPacket.info.seqno >>> 0) + buf.length) >>> 0}`);
         //这里已经是识别到的服务器的包了
         if (tcp_next_seq === -1) {
-            logger.error("Unexpected TCP capture error! tcp_next_seq is -1");
+            logger.error('Unexpected TCP capture error! tcp_next_seq is -1');
             if (buf.length > 4 && buf.readUInt32BE() < 0x0fffff) {
                 tcp_next_seq = tcpPacket.info.seqno;
             }
         }
         // logger.debug('TCP next seq: ' + tcp_next_seq);
-        if (((tcp_next_seq - tcpPacket.info.seqno) << 0) <= 0 || tcp_next_seq === -1) {
+        if ((tcp_next_seq - tcpPacket.info.seqno) << 0 <= 0 || tcp_next_seq === -1) {
             tcp_cache.set(tcpPacket.info.seqno, buf);
         }
         while (tcp_cache.has(tcp_next_seq)) {
@@ -1093,20 +1090,20 @@ async function main() {
                 const processor = new PacketProcessor({ logger, userDataManager });
                 if (!isPaused) processor.processPacket(packet);
             } else if (packetSize > 0x0fffff) {
-                logger.error(`Invalid Length!! ${_data.length},${len},${_data.toString("hex")},${tcp_next_seq}`);
+                logger.error(`Invalid Length!! ${_data.length},${len},${_data.toString('hex')},${tcp_next_seq}`);
                 process.exit(1);
                 break;
             }
         }
         tcp_lock.release();
-    }
+    };
     (async () => {
         while (true) {
             if (eth_queue.length) {
                 const pkt = eth_queue.shift();
                 processEthPacket(pkt);
             } else {
-                await new Promise(r => setTimeout(r, 1));
+                await new Promise((r) => setTimeout(r, 1));
             }
         }
     })();
@@ -1126,8 +1123,8 @@ async function main() {
         }
 
         if (tcp_last_time && Date.now() - tcp_last_time > FRAGMENT_TIMEOUT) {
-            logger.warn("Cannot capture the next packet! Is the game closed or disconnected? seq: " + tcp_next_seq);
-            current_server = "";
+            logger.warn('Cannot capture the next packet! Is the game closed or disconnected? seq: ' + tcp_next_seq);
+            current_server = '';
             clearTcpCache();
         }
     }, 10000);
@@ -1136,7 +1133,7 @@ async function main() {
 if (!zlib.zstdDecompressSync) {
     // 之前总是有人用旧版本nodejs，不看警告还说数据不准，现在干脆不让旧版用算了
     // 还有人对着开源代码写闭源，不遵守许可就算了，还要诋毁开源，什么人啊这是
-    print("zstdDecompressSync is not available! Please update your Node.js!");
+    print('zstdDecompressSync is not available! Please update your Node.js!');
     process.exit(1);
 }
 
