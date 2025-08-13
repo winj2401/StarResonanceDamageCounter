@@ -976,8 +976,7 @@ async function main() {
     const buffer = Buffer.alloc(65535);
     const linkType = c.open(device, filter, bufSize, buffer);
     if (linkType !== 'ETHERNET') {
-        logger.error('WRONG DEVICE!');
-        process.exit(1);
+        logger.error('The device seems to be WRONG! Please check the device! Device type: ' + linkType);
     }
     c.setMinBytes && c.setMinBytes(0);
     c.on('packet', async function (nbytes, trunc) {
