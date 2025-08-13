@@ -5,6 +5,7 @@ const winston = require("winston");
 const zlib = require('zlib');
 const express = require('express');
 const http = require('http');
+const net = require('net');
 const path = require('path');
 const { Server } = require('socket.io');
 const fs = require('fs');
@@ -843,9 +844,25 @@ async function main() {
         }
     }, 50);
 
-    server.listen(8989, () => {
+    const checkPort = (port) => {
+        return new Promise((resolve) => {
+            const server = net.createServer();
+            server.once('error', () => resolve(false));
+            server.once('listening', () => {
+                server.close(() => resolve(true));
+            });
+            server.listen(port);
+        });
+    }
+    let server_port = 8989;
+    while (true) {
+        if (await checkPort(server_port)) break;
+        logger.warn(`port ${server_port} is already in use`);
+        server_port++;
+    }
+    server.listen(server_port, () => {
         // 自动用默认浏览器打开网页（跨平台兼容）
-        const url = 'http://localhost:8989';
+        const url = 'http://localhost:' + server_port;
         logger.info(`Web Server started at ${url}`);
         logger.info('WebSocket Server started');
 
