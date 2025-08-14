@@ -18,6 +18,8 @@ const print = console.log;
 const app = express();
 const { exec } = require('child_process');
 
+const skillConfig = require('./skill_names.json').skill_names;
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -353,9 +355,7 @@ class UserData {
             const luckyCount = stat.count.lucky;
             const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
             const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
-            const skillConfig = require('./skill_config.json').skills;
-            const cfg = skillConfig[skillId];
-            const name = cfg ? cfg.name : skillId;
+            const name = skillConfig[skillId] ?? skillId;
             const elementype = stat.element;
 
             skills[skillId] = {

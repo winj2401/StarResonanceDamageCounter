@@ -126,6 +126,15 @@ const ProfessionType = {
     灵魂乐手: 13,
 };
 
+const EDamageSource = {
+    EDamageSourceSkill: 0,
+    EDamageSourceBullet: 1,
+    EDamageSourceBuff: 2,
+    EDamageSourceFall: 3,
+    EDamageSourceFakeBullet: 4,
+    EDamageSourceOther: 100,
+}
+
 const EDamageProperty = {
     General: 0,
     Fire: 1,
@@ -272,6 +281,7 @@ class PacketProcessor {
             const isLucky = !!luckyValue;
             const hpLessenValue = syncDamageInfo.HpLessenValue != null ? syncDamageInfo.HpLessenValue : Long.ZERO;
             const damageElement = getDamageElement(syncDamageInfo.Property);
+            const damageSource = syncDamageInfo.DamageSource ?? 0;
 
             if (isTargetPlayer) {
                 //玩家目标
@@ -346,7 +356,7 @@ class PacketProcessor {
             infoStr += ` Tgt: ${targetName}`;
 
             this.logger.info(
-                `${infoStr} Skill/Buff: ${skillId} ${actionType}: ${damage} ${isHeal ? '' : ` HpLessen: ${hpLessenValue}`} Ele: ${damageElement.slice(-1)} Ext: ${extra.join('|')}`,
+                `Type: ${damageSource} ${infoStr} Skill/Buff: ${skillId} ${actionType}: ${damage} ${isHeal ? '' : ` HpLessen: ${hpLessenValue}`} Ele: ${damageElement.slice(-1)} Ext: ${extra.join('|')}`,
             );
         }
     }
