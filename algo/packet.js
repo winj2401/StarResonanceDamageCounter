@@ -264,6 +264,7 @@ class PacketProcessor {
 
             // TODO: from testing, first bit is set when there's crit, 3rd bit for lucky, require more testing here
             const isCrit = syncDamageInfo.TypeFlag != null ? (syncDamageInfo.TypeFlag & 1) === 1 : false;
+            const isCauseLucky = syncDamageInfo.TypeFlag != null ? (syncDamageInfo.TypeFlag & 0b100) === 0b100 : false;
 
             const isMiss = syncDamageInfo.IsMiss != null ? syncDamageInfo.IsMiss : false;
             const isHeal = syncDamageInfo.Type === pb.EDamageType.Heal;
@@ -285,6 +286,7 @@ class PacketProcessor {
                             damage.toNumber(),
                             isCrit,
                             isLucky,
+                            isCauseLucky,
                             targetUuid.toNumber(),
                         );
                     }
@@ -307,6 +309,7 @@ class PacketProcessor {
                             damage.toNumber(),
                             isCrit,
                             isLucky,
+                            isCauseLucky,
                             hpLessenValue.toNumber(),
                         );
                     }
@@ -316,6 +319,7 @@ class PacketProcessor {
             let extra = [];
             if (isCrit) extra.push('Crit');
             if (isLucky) extra.push('Lucky');
+            if (isCauseLucky) extra.push('CauseLucky');
             if (extra.length === 0) extra = ['Normal'];
 
             const actionType = isHeal ? 'Healing' : 'Damage';

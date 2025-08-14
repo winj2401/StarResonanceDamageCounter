@@ -1071,7 +1071,7 @@
                                     <th>总数值</th>
                                     <th>使用次数</th>
                                     <th>暴击率</th>
-                                    <th>幸运率</th>
+                                    <th>幸运触发率</th>
                                     <th>暴击数值</th>
                                     <th>普通数值</th>
                                 </tr>
@@ -1136,8 +1136,8 @@
                             <th rowspan="2" title="角色评分">评分</th>
                             <th rowspan="2" title="角色血量">HP</th>
                             <th rowspan="2" title="角色在战斗中受到的伤害">承伤</th>
-                            <th rowspan="2" title="角色在战斗中的暴击触发率">暴击率</th>
-                            <th rowspan="2" title="角色在战斗中的幸运触发率">幸运率</th>
+                            <th rowspan="2" title="角色在战斗中的暴击伤害次数占总伤害次数的比例">暴击率</th>
+                            <th rowspan="2" title="角色在战斗中的幸运伤害次数占总伤害次数的比例">幸运率</th>
                             <th class="damage-main-col" colspan="4">伤害</th>
                             <th class="damage-simple-col" style="display: none" colspan="1">伤害</th>
                             <th class="dps-col" colspan="3">DPS</th>
@@ -1505,10 +1505,10 @@
                     ],
                 };
 
-                // 暴击率/幸运率对比图
+                // 暴击率/幸运触发率对比图
                 const critOption = {
                     title: {
-                        text: '暴击率与幸运率',
+                        text: '暴击率与幸运触发率',
                         left: 'center',
                         textStyle: { color: '#e2e8f0' },
                     },
@@ -1520,7 +1520,7 @@
                         textStyle: { color: '#ecf0f1' },
                     },
                     legend: {
-                        data: ['暴击率', '幸运率'],
+                        data: ['暴击率', '幸运触发率'],
                         bottom: 10,
                         textStyle: { color: '#cbd5e0' },
                     },
@@ -1558,7 +1558,7 @@
                             itemStyle: { color: '#ff9966' },
                         },
                         {
-                            name: '幸运率',
+                            name: '幸运触发率',
                             type: 'bar',
                             data: luckyRates,
                             itemStyle: { color: '#93f9b9' },

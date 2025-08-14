@@ -249,15 +249,16 @@ class UserData {
      * @param {number} damage - 伤害值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
+     * @param {boolean} [isCauseLucky] - 是否造成幸运
      * @param {number} hpLessenValue - 生命值减少量
      */
-    addDamage(skillId, element, damage, isCrit, isLucky, hpLessenValue = 0) {
+    addDamage(skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue = 0) {
         this.damageStats.addRecord(damage, isCrit, isLucky, hpLessenValue);
         // 记录技能使用情况
         if (!this.skillUsage.has(skillId)) {
             this.skillUsage.set(skillId, new StatisticData(this, '伤害', element));
         }
-        this.skillUsage.get(skillId).addRecord(damage, isCrit, isLucky, hpLessenValue);
+        this.skillUsage.get(skillId).addRecord(damage, isCrit, isCauseLucky, hpLessenValue);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
 
         const subProfession = getSubProfessionBySkillId(skillId);
@@ -272,14 +273,15 @@ class UserData {
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
+     * @param {boolean} [isCauseLucky] - 是否造成幸运
      */
-    addHealing(skillId, element, healing, isCrit, isLucky) {
+    addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky) {
         this.healingStats.addRecord(healing, isCrit, isLucky);
         // 记录技能使用情况
         if (!this.skillUsage.has(skillId)) {
             this.skillUsage.set(skillId, new StatisticData(this, '治疗', element));
         }
-        this.skillUsage.get(skillId).addRecord(healing, isCrit, isLucky);
+        this.skillUsage.get(skillId).addRecord(healing, isCrit, isCauseLucky);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
 
         const subProfession = getSubProfessionBySkillId(skillId);
@@ -527,11 +529,12 @@ class UserDataManager {
      * @param {number} damage - 伤害值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
+     * @param {boolean} [isCauseLucky] - 是否造成幸运
      * @param {number} hpLessenValue - 生命值减少量
      */
-    addDamage(uid, skillId, element, damage, isCrit, isLucky, hpLessenValue = 0) {
+    addDamage(uid, skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue = 0) {
         const user = this.getUser(uid);
-        user.addDamage(skillId, element, damage, isCrit, isLucky, hpLessenValue);
+        user.addDamage(skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue);
     }
 
     /** 添加治疗记录
@@ -541,11 +544,12 @@ class UserDataManager {
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
+     * @param {boolean} [isCauseLucky] - 是否造成幸运
      * @param {number} targetUid - 被治疗的用户ID
      */
-    addHealing(uid, skillId, element, healing, isCrit, isLucky, targetUid) {
+    addHealing(uid, skillId, element, healing, isCrit, isLucky, isCauseLucky, targetUid) {
         const user = this.getUser(uid);
-        user.addHealing(skillId, element, healing, isCrit, isLucky);
+        user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
         const targetUser = this.getUser(targetUid);
         if (targetUser.attr.hp && typeof targetUser.attr.hp == 'number') {
             if (targetUser.attr.max_hp && targetUser.attr.max_hp - targetUser.attr.hp < healing) {
