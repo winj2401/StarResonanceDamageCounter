@@ -441,6 +441,8 @@ class UserDataManager {
         this.saveThrottleDelay = 2000; // 2秒节流延迟，避免频繁磁盘写入
         this.saveThrottleTimer = null;
         this.pendingSave = false;
+
+        this.maxHpCache = new Map(); // 这个经常变化的就不存盘了
     }
 
     /** 加载用户缓存 */
@@ -516,6 +518,9 @@ class UserDataManager {
                 if (cachedData.fightPoint !== undefined && cachedData.fightPoint !== null) {
                     user.setFightPoint(cachedData.fightPoint);
                 }
+            }
+            if (this.maxHpCache.has(uid)) {
+                user.setAttrKV('max_hp', this.maxHpCache.get(uid));
             }
 
             this.users.set(uid, user);
@@ -637,6 +642,10 @@ class UserDataManager {
     setAttrKV(uid, key, value) {
         const user = this.getUser(uid);
         user.attr[key] = value;
+
+        if (key === 'max_hp') {
+            this.maxHpCache.set(uid, value);
+        }
     }
 
     /** 更新所有用户的实时DPS和HPS */
