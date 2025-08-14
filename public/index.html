@@ -1073,8 +1073,6 @@
                                     <th>暴击率</th>
                                     <th>幸运率</th>
                                     <th>暴击数值</th>
-                                    <th>幸运数值</th>
-                                    <th>暴击幸运</th>
                                     <th>普通数值</th>
                                 </tr>
                             </thead>
@@ -1399,9 +1397,7 @@
                     <td>${skill.totalCount}</td>
                     <td class="skill-crit">${(skill.critRate * 100).toFixed(2)}%</td>
                     <td class="skill-lucky">${(skill.luckyRate * 100).toFixed(2)}%</td>
-                    <td>${skill.damageBreakdown.critical.toLocaleString()}</td>
-                    <td>${skill.damageBreakdown.lucky.toLocaleString()}</td>
-                    <td>${skill.damageBreakdown.crit_lucky.toLocaleString()}</td>
+                    <td>${(skill.damageBreakdown.critical + skill.damageBreakdown.crit_lucky).toLocaleString()}</td>
                     <td>${skill.damageBreakdown.normal.toLocaleString()}</td>
                 `;
                     tableBody.appendChild(row);
