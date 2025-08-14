@@ -126,6 +126,19 @@ const ProfessionType = {
     灵魂乐手: 13,
 };
 
+const EDamageProperty = {
+    General: 0,
+    Fire: 1,
+    Water: 2,
+    Electricity: 3,
+    Wood: 4,
+    Wind: 5,
+    Rock: 6,
+    Light: 7,
+    Dark: 8,
+    Count: 9,
+}
+
 const getProfessionNameFromId = (professionId) => {
     switch (professionId) {
         case ProfessionType.雷影剑士:
@@ -152,6 +165,33 @@ const getProfessionNameFromId = (professionId) => {
             return '灵魂乐手';
         default:
             return '';
+    }
+};
+
+const getDamageElement = (damageProperty) => {
+    switch (damageProperty) {
+        case EDamageProperty.General:
+            return '⚔️物';
+        case EDamageProperty.Fire:
+            return '🔥火';
+        case EDamageProperty.Water:
+            return '❄️冰';
+        case EDamageProperty.Electricity:
+            return '⚡雷';
+        case EDamageProperty.Wood:
+            return '🍀森';
+        case EDamageProperty.Wind:
+            return '💨风';
+        case EDamageProperty.Rock:
+            return '⛰️岩';
+        case EDamageProperty.Light:
+            return '🌟光';
+        case EDamageProperty.Dark:
+            return '🌑暗';
+        case EDamageProperty.Count:
+            return '❓？'; // 未知
+        default:
+            return '⚔️物';
     }
 };
 
@@ -230,6 +270,7 @@ class PacketProcessor {
             const isDead = syncDamageInfo.IsDead != null ? syncDamageInfo.IsDead : false;
             const isLucky = !!luckyValue;
             const hpLessenValue = syncDamageInfo.HpLessenValue != null ? syncDamageInfo.HpLessenValue : Long.ZERO;
+            const damageElement = getDamageElement(syncDamageInfo.Property);
 
             if (isTargetPlayer) {
                 //玩家目标
@@ -237,7 +278,15 @@ class PacketProcessor {
                     //玩家被治疗
                     if (isAttackerPlayer) {
                         //只记录玩家造成的治疗
-                        this.userDataManager.addHealing(attackerUuid.toNumber(), skillId, damage.toNumber(), isCrit, isLucky, targetUuid.toNumber());
+                        this.userDataManager.addHealing(
+                            attackerUuid.toNumber(),
+                            skillId,
+                            damageElement,
+                            damage.toNumber(),
+                            isCrit,
+                            isLucky,
+                            targetUuid.toNumber(),
+                        );
                     }
                 } else {
                     //玩家受到伤害
@@ -254,6 +303,7 @@ class PacketProcessor {
                         this.userDataManager.addDamage(
                             attackerUuid.toNumber(),
                             skillId,
+                            damageElement,
                             damage.toNumber(),
                             isCrit,
                             isLucky,
@@ -292,7 +342,7 @@ class PacketProcessor {
             infoStr += ` Tgt: ${targetName}`;
 
             this.logger.info(
-                `${infoStr} Skill/Buff: ${skillId} ${actionType}: ${damage} ${isHeal ? '' : ` HpLessen: ${hpLessenValue}`} Extra: ${extra.join('|')}`,
+                `${infoStr} Skill/Buff: ${skillId} ${actionType}: ${damage} ${isHeal ? '' : ` HpLessen: ${hpLessenValue}`} Ele: ${damageElement.slice(-1)} Ext: ${extra.join('|')}`,
             );
         }
     }

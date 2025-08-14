@@ -24,17 +24,6 @@ const rl = readline.createInterface({
 });
 const devices = cap.deviceList();
 
-const elementMap = {
-    fire: '🔥火',
-    ice: '❄️冰',
-    thunder: '⚡雷',
-    earth: '🍀森',
-    wind: '💨风',
-    light: '✨光',
-    dark: '🌙暗',
-    physics: '⚔️',
-};
-
 function ask(question) {
     return new Promise((resolve) => {
         rl.question(question, (answer) => {
@@ -110,9 +99,10 @@ class Lock {
 
 // 通用统计类，用于处理伤害或治疗数据
 class StatisticData {
-    constructor(user, type) {
+    constructor(user, type, element) {
         this.user = user;
         this.type = type || '';
+        this.element = element || '';
         this.stats = {
             normal: 0,
             critical: 0,
@@ -255,16 +245,17 @@ class UserData {
 
     /** 添加伤害记录
      * @param {number} skillId - 技能ID/Buff ID
+     * @param {string} element - 技能元素属性
      * @param {number} damage - 伤害值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
      * @param {number} hpLessenValue - 生命值减少量
      */
-    addDamage(skillId, damage, isCrit, isLucky, hpLessenValue = 0) {
+    addDamage(skillId, element, damage, isCrit, isLucky, hpLessenValue = 0) {
         this.damageStats.addRecord(damage, isCrit, isLucky, hpLessenValue);
         // 记录技能使用情况
         if (!this.skillUsage.has(skillId)) {
-            this.skillUsage.set(skillId, new StatisticData(this, '伤害'));
+            this.skillUsage.set(skillId, new StatisticData(this, '伤害', element));
         }
         this.skillUsage.get(skillId).addRecord(damage, isCrit, isLucky, hpLessenValue);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
@@ -277,15 +268,16 @@ class UserData {
 
     /** 添加治疗记录
      * @param {number} skillId - 技能ID/Buff ID
+     * @param {string} element - 技能元素属性
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
      */
-    addHealing(skillId, healing, isCrit, isLucky) {
+    addHealing(skillId, element, healing, isCrit, isLucky) {
         this.healingStats.addRecord(healing, isCrit, isLucky);
         // 记录技能使用情况
         if (!this.skillUsage.has(skillId)) {
-            this.skillUsage.set(skillId, new StatisticData(this, '治疗'));
+            this.skillUsage.set(skillId, new StatisticData(this, '治疗', element));
         }
         this.skillUsage.get(skillId).addRecord(healing, isCrit, isLucky);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
@@ -362,7 +354,7 @@ class UserData {
             const skillConfig = require('./skill_config.json').skills;
             const cfg = skillConfig[skillId];
             const name = cfg ? cfg.name : skillId;
-            const elementype = elementMap[cfg?.element] ?? '';
+            const elementype = stat.element;
 
             skills[skillId] = {
                 displayName: name,
@@ -531,27 +523,29 @@ class UserDataManager {
     /** 添加伤害记录
      * @param {number} uid - 造成伤害的用户ID
      * @param {number} skillId - 技能ID/Buff ID
+     * @param {string} element - 技能元素属性
      * @param {number} damage - 伤害值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
      * @param {number} hpLessenValue - 生命值减少量
      */
-    addDamage(uid, skillId, damage, isCrit, isLucky, hpLessenValue = 0) {
+    addDamage(uid, skillId, element, damage, isCrit, isLucky, hpLessenValue = 0) {
         const user = this.getUser(uid);
-        user.addDamage(skillId, damage, isCrit, isLucky, hpLessenValue);
+        user.addDamage(skillId, element, damage, isCrit, isLucky, hpLessenValue);
     }
 
     /** 添加治疗记录
      * @param {number} uid - 进行治疗的用户ID
      * @param {number} skillId - 技能ID/Buff ID
+     * @param {string} element - 技能元素属性
      * @param {number} healing - 治疗值
      * @param {boolean} isCrit - 是否为暴击
      * @param {boolean} [isLucky] - 是否为幸运
      * @param {number} targetUid - 被治疗的用户ID
      */
-    addHealing(uid, skillId, healing, isCrit, isLucky, targetUid) {
+    addHealing(uid, skillId, element, healing, isCrit, isLucky, targetUid) {
         const user = this.getUser(uid);
-        user.addHealing(skillId, healing, isCrit, isLucky);
+        user.addHealing(skillId, element, healing, isCrit, isLucky);
         const targetUser = this.getUser(targetUid);
         if (targetUser.attr.hp && typeof targetUser.attr.hp == 'number') {
             if (targetUser.attr.max_hp && targetUser.attr.max_hp - targetUser.attr.hp < healing) {
