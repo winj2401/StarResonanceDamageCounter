@@ -1398,7 +1398,7 @@
                     <td class="skill-crit">${(skill.critRate * 100).toFixed(2)}%</td>
                     <td class="skill-lucky">${(skill.luckyRate * 100).toFixed(2)}%</td>
                     <td>${(skill.damageBreakdown.critical + skill.damageBreakdown.crit_lucky).toLocaleString()}</td>
-                    <td>${skill.damageBreakdown.normal.toLocaleString()}</td>
+                    <td>${(skill.damageBreakdown.normal + skill.damageBreakdown.crit).toLocaleString()}</td>
                 `;
                     tableBody.appendChild(row);
 
