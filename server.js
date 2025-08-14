@@ -280,6 +280,7 @@ class UserData {
     addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky) {
         this.healingStats.addRecord(healing, isCrit, isLucky);
         // 记录技能使用情况
+        skillId = skillId + 1000000000;
         if (!this.skillUsage.has(skillId)) {
             this.skillUsage.set(skillId, new StatisticData(this, '治疗', element));
         }
