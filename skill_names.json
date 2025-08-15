@@ -412,5 +412,6 @@
         "3936001": "绝技！静默之水(蜥蜴人法师)",
         "10040102": "剑盾哥布林-风刃斩共鸣"
     },
-    "license": "AGPL-3.0"
+    "license": "AGPL-3.0",
+    "link": "https://github.com/dmlgzs/StarResonanceDamageCounter/blob/master/skill_names.json"
 }
