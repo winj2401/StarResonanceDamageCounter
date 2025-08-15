@@ -984,6 +984,35 @@
                 border-color: #2980b9;
                 color: white;
             }
+
+            /* 图表折叠按钮样式 */
+            #chartToggleBtn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #chartToggleBtn:hover {
+                background-color: rgba(0, 0, 0, 0.1);
+            }
+
+            #chartToggleBtn svg {
+                transition: transform 0.3s ease;
+                color: #666;
+            }
+
+            /* 箭头旋转动画 */
+            #chartToggleBtn.collapsed svg {
+                transform: rotate(180deg);
+            }
+
+            .dark-mode #chartToggleBtn:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .dark-mode #chartToggleBtn svg {
+                color: #cbd5e0;
+            }
         </style>
     </head>
 
@@ -1092,9 +1121,18 @@
         <div class="chart-container">
             <h3 style="margin-top: 0; display: flex; justify-content: space-between; align-items: center">
                 📈 DPS趋势
-                <span id="chartStatus" style="font-size: 12px; color: #666; font-weight: normal"></span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="chartStatus" style="font-size: 12px; color: #666; font-weight: normal"></span>
+                    <button id="chartToggleBtn" onclick="toggleChartVisibility()" style="background: none; border: none; font-size: 16px; cursor: pointer; padding: 5px; border-radius: 3px; transition: background-color 0.2s;">
+                        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6,10 8,8 10,10"></polyline>
+                        </svg>
+                    </button>
+                </div>
             </h3>
-            <div id="dpsChart" style="width: 100%; height: 350px"></div>
+            <div id="dpsChartContent" style="transition: all 0.3s ease; overflow: hidden;">
+                <div id="dpsChart" style="width: 100%; height: 350px"></div>
+            </div>
         </div>
 
         <div class="card">
@@ -1218,6 +1256,9 @@
             let skillChart1 = null;
             let skillChart2 = null;
             let currentSkillUserId = 0;
+
+            // 图表显示/隐藏控制相关变量
+            let isChartVisible = true;
 
             // 从series数据中提取可见最大值
             function getVisibleMaxFromSeries(seriesArray) {
@@ -2170,6 +2211,40 @@
                 });
             }
 
+            // 切换图表显示/隐藏
+            function toggleChartVisibility() {
+                isChartVisible = !isChartVisible;
+                const chartContent = document.getElementById('dpsChartContent');
+                const toggleBtn = document.getElementById('chartToggleBtn');
+
+                if (isChartVisible) {
+                    // 展开动画
+                    chartContent.style.height = '350px';
+                    chartContent.style.opacity = '1';
+                    toggleBtn.classList.remove('collapsed');
+                    toggleBtn.title = '隐藏图表';
+                    
+                    // 重新初始化图表
+                    if (!chart) {
+                        // 等待动画完成后再初始化图表
+                        setTimeout(() => {
+                            initChart();
+                            setTimeout(() => {
+                                if (chart) chart.resize();
+                            }, 350);
+                        }, 100);
+                    }
+                } else {
+                    // 折叠动画
+                    chartContent.style.height = '0px';
+                    chartContent.style.opacity = '0';
+                    toggleBtn.classList.add('collapsed');
+                    toggleBtn.title = '显示图表';
+                }
+
+                localStorage.setItem('chartVisible', isChartVisible.toString());
+            }
+
             // 页面加载时检查本地存储的主题偏好和排序偏好
             function initTheme() {
                 const isDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -2248,6 +2323,29 @@
                 }
             }
 
+            // 初始化图表可见性状态
+            function initChartVisibility() {
+                const savedChartVisible = localStorage.getItem('chartVisible');
+                if (savedChartVisible !== null) {
+                    isChartVisible = savedChartVisible === 'true';
+                }
+
+                const chartContent = document.getElementById('dpsChartContent');
+                const toggleBtn = document.getElementById('chartToggleBtn');
+
+                if (!isChartVisible) {
+                    chartContent.style.height = '0px';
+                    chartContent.style.opacity = '0';
+                    toggleBtn.classList.add('collapsed');
+                    toggleBtn.title = '显示图表';
+                } else {
+                    chartContent.style.height = '350px';
+                    chartContent.style.opacity = '1';
+                    toggleBtn.classList.remove('collapsed');
+                    toggleBtn.title = '隐藏图表';
+                }
+            }
+
             // 初始化暂停状态 - 优先从服务器获取状态
             async function initPauseState() {
                 try {
@@ -2295,6 +2393,8 @@
 
             // 初始化ECharts图表
             function initChart() {
+                if (!isChartVisible) return;
+                
                 const chartDom = document.getElementById('dpsChart');
                 chart = echarts.init(chartDom);
 
@@ -2471,6 +2571,7 @@
 
             // 更新图表 - 增量更新避免闪烁
             function updateChart(userArray) {
+                if (!isChartVisible) return;
                 if (!chart) return;
 
                 const currentTime = Date.now();
@@ -3513,6 +3614,7 @@
                 initSimpleMode();
                 initSortMode();
                 initDataGroup();
+                initChartVisibility();
                 initPauseState();
                 initChart();
 
