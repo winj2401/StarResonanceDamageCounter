@@ -836,7 +836,7 @@ async function main() {
         });
     });
 
-    // 每50ms广播数据给所有WebSocket客户端
+    // 每100ms广播数据给所有WebSocket客户端
     setInterval(() => {
         if (!isPaused) {
             const userData = userDataManager.getAllUsersData();
@@ -846,7 +846,7 @@ async function main() {
             };
             io.emit('data', data);
         }
-    }, 50);
+    }, 100);
 
     const checkPort = (port) => {
         return new Promise((resolve) => {
