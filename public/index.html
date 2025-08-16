@@ -1930,25 +1930,41 @@
                     // 其他数据列
                     const otherCells = [
                         user.profession || '未知',
-                        user.fightPoint,
-                        user.hp ?? '未知',
-                        user.taken_damage,
+                        Number(user.fightPoint).toLocaleString(),
+                        (user.hp ?? '未知').toLocaleString(),
+                        Number(user.taken_damage).toLocaleString(),
                         `${(crit_rate * 100).toFixed(2)}%`,
                         `${(lucky_rate * 100).toFixed(2)}%`,
                     ];
                     if (currentDataGroup === 'damage' || currentDataGroup === 'all') {
-                        otherCells.push(user.total_damage.total);
+                        otherCells.push(Number(user.total_damage.total).toLocaleString());
                         if (!isSimpleMode) {
-                            otherCells.push(user.total_damage.critical, user.total_damage.lucky, user.total_damage.crit_lucky);
+                            otherCells.push(
+                                Number(user.total_damage.critical).toLocaleString(),
+                                Number(user.total_damage.lucky).toLocaleString(),
+                                Number(user.total_damage.crit_lucky).toLocaleString(),
+                            );
                         }
-                        otherCells.push(user.realtime_dps, user.realtime_dps_max, user.total_dps.toFixed(2));
+                        otherCells.push(
+                            Number(user.realtime_dps).toLocaleString(),
+                            Number(user.realtime_dps_max).toLocaleString(),
+                            Number(user.total_dps.toFixed(2)).toLocaleString()
+                        );
                     }
                     if (currentDataGroup === 'healing' || currentDataGroup === 'all') {
-                        otherCells.push(user.total_healing.total);
+                        otherCells.push(Number(user.total_healing.total).toLocaleString());
                         if (!isSimpleMode) {
-                            otherCells.push(user.total_healing.critical, user.total_healing.lucky, user.total_healing.crit_lucky);
+                            otherCells.push(
+                                Number(user.total_healing.critical).toLocaleString(),
+                                Number(user.total_healing.lucky).toLocaleString(),
+                                Number(user.total_healing.crit_lucky).toLocaleString(),
+                            );
                         }
-                        otherCells.push(user.realtime_hps, user.realtime_hps_max, user.total_hps.toFixed(2));
+                        otherCells.push(
+                            Number(user.realtime_hps).toLocaleString(),
+                            Number(user.realtime_hps_max).toLocaleString(),
+                            Number(user.total_hps.toFixed(2)).toLocaleString()
+                        );
                     }
                     let existingCells = row.querySelectorAll('td');
                     //所需展示的列数
