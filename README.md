@@ -24,7 +24,15 @@
 
 ## 🚀 快速开始
 
-### 前置要求
+### 一键使用
+
+前往 [GitHub Actions 页面](https://github.com/dmlgzs/StarResonanceDamageCounter/actions) 下载最新自动打包版本。
+
+前往 [Release 页面](https://github.com/dmlgzs/StarResonanceDamageCounter/releases) 下载发布版本。
+
+### 手动编译
+
+#### 前置要求
 
 - **Node.js** >= 22.15.0
 - **pnpm** >= 10.13.1
@@ -36,7 +44,7 @@
   - 可通过 [Python 官网](https://www.python.org/downloads/) 下载并安装
   - 确保 Python 添加到系统 PATH 中
 
-### 安装步骤
+#### 安装步骤
 
 1. **克隆仓库**
    ```bash
@@ -79,7 +87,7 @@
 
 1. **选择网络设备**
    - 启动程序后，会显示可用的网络设备列表
-   - 输入对应设备的编号（通常选择主网卡）
+   - 输入对应设备在程序输出的列表里显示的数字编号（通常选择主网卡）
    - 可以前往控制面板或者系统设置查找使用的网卡
 
 2. **设置日志级别**
@@ -195,6 +203,10 @@
 4. **cap 模块编译错误**
    - 确保已安装 Visual Studio Build Tools 和 Python
    - 确认 Node.js 版本符合要求
+
+5. **启动程序立马自动退出**
+   - 确保已安装 Npcap
+   - 确认网络设备选择输入了正确的数字编号
 
 ## 📄 许可证
 
