@@ -90,3 +90,5 @@ jobs:
           dist/commit.txt
           LICENSE
           README.md
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
