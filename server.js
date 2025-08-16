@@ -17,7 +17,7 @@ const PROTOCOL = decoders.PROTOCOL;
 const print = console.log;
 const app = express();
 const { exec } = require('child_process');
-const findDefaultNetworkDevice = require('./netInterfaceUtil');
+const findDefaultNetworkDevice = require('./algo/netInterfaceUtil');
 
 const skillConfig = require('./skill_names.json').skill_names;
 
