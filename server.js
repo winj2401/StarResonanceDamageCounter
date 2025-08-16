@@ -550,8 +550,10 @@ class UserDataManager {
      * @param {number} targetUid - 被治疗的用户ID
      */
     addHealing(uid, skillId, element, healing, isCrit, isLucky, isCauseLucky, targetUid) {
-        const user = this.getUser(uid);
-        user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
+        if (uid !== 0) {
+            const user = this.getUser(uid);
+            user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
+        }
         const targetUser = this.getUser(targetUid);
         if (targetUser.attr.hp && typeof targetUser.attr.hp == 'number') {
             if (targetUser.attr.max_hp && targetUser.attr.max_hp - targetUser.attr.hp < healing) {

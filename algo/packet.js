@@ -287,19 +287,16 @@ class PacketProcessor {
                 //玩家目标
                 if (isHeal) {
                     //玩家被治疗
-                    if (isAttackerPlayer) {
-                        //只记录玩家造成的治疗
-                        this.userDataManager.addHealing(
-                            attackerUuid.toNumber(),
-                            skillId,
-                            damageElement,
-                            damage.toNumber(),
-                            isCrit,
-                            isLucky,
-                            isCauseLucky,
-                            targetUuid.toNumber(),
-                        );
-                    }
+                    this.userDataManager.addHealing(
+                        isAttackerPlayer ? attackerUuid.toNumber() : 0,
+                        skillId,
+                        damageElement,
+                        damage.toNumber(),
+                        isCrit,
+                        isLucky,
+                        isCauseLucky,
+                        targetUuid.toNumber(),
+                    );
                 } else {
                     //玩家受到伤害
                     this.userDataManager.addTakenDamage(targetUuid.toNumber(), damage.toNumber());
