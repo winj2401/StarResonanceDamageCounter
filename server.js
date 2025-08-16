@@ -39,26 +39,33 @@ function getSubProfessionBySkillId(skillId) {
     switch (skillId) {
         case 1241:
             return '射线';
+        case 2307:
+        case 2361:
         case 55302:
             return '协奏';
         case 20301:
-        case 21418:
             return '愈合';
         case 1518:
         case 1541:
+        case 21402:
             return '惩戒';
         case 2306:
             return '狂音';
+        case 120901:
         case 120902:
             return '冰矛';
         case 1714:
         case 1734:
             return '居合';
         case 44701:
+        case 179906:
             return '月刃';
         case 220112:
         case 2203622:
             return '鹰弓';
+        case 2292:
+        case 1700820:
+        case 1700825:
         case 1700827:
             return '狼弓';
         case 1419:
@@ -72,6 +79,11 @@ function getSubProfessionBySkillId(skillId) {
             return '光盾';
         case 199902:
             return '岩盾';
+        case 1930:
+        case 1931:
+        case 1934:
+        case 1935:
+            return '格挡';
         default:
             return '';
     }
@@ -288,7 +300,7 @@ class UserData {
         this.skillUsage.get(skillId).addRecord(healing, isCrit, isCauseLucky);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
 
-        const subProfession = getSubProfessionBySkillId(skillId);
+        const subProfession = getSubProfessionBySkillId(skillId - 1000000000);
         if (subProfession) {
             this.setSubProfession(subProfession);
         }
@@ -357,7 +369,7 @@ class UserData {
             const luckyCount = stat.count.lucky;
             const critRate = stat.count.total > 0 ? critCount / stat.count.total : 0;
             const luckyRate = stat.count.total > 0 ? luckyCount / stat.count.total : 0;
-            const name = skillConfig[skillId % 1000000000] ?? (skillId % 1000000000);
+            const name = skillConfig[skillId % 1000000000] ?? skillId % 1000000000;
             const elementype = stat.element;
 
             skills[skillId] = {
