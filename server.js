@@ -697,7 +697,7 @@ async function main() {
     print('Version: V2.6');
     print('GitHub: https://github.com/dmlgzs/StarResonanceDamageCounter');
     for (let i = 0; i < devices.length; i++) {
-        print(i + '.\t' + devices[i].description);
+        print(String(i).padStart(2, ' ') + '.' + (devices[i].description || devices[i].name));
     }
 
     // 从命令行参数获取设备号和日志级别
@@ -709,7 +709,7 @@ async function main() {
         print('自动查找默认网卡...');
         const device = await findDefaultNetworkDevice(devices);
         if (device) {
-            num = devices.findIndex(d => d.description === device.description);
+            num = devices.findIndex(d => d.name === device.name);
             if (num === -1) {
                 print('未找到默认网卡！');
                 num = undefined;
@@ -728,18 +728,16 @@ async function main() {
     }
 
     // 如果命令行没传或者不合法，使用交互
-    if (num === undefined || !devices[num]) {
-        num = await ask('Please enter the number of the device used for packet capture: ');
+    while (num === undefined || !devices[num]) {
+        num = await ask('Please enter the number of the device to capture: ');
         if (!devices[num]) {
             print('Cannot find device ' + num + '!');
-            process.exit(1);
         }
     }
-    if (log_level === undefined || !isValidLogLevel(log_level)) {
+    while (log_level === undefined || !isValidLogLevel(log_level)) {
         log_level = (await ask('Please enter log level (info|debug): ')) || 'info';
         if (!isValidLogLevel(log_level)) {
             print('Invalid log level!');
-            process.exit(1);
         }
     }
 
