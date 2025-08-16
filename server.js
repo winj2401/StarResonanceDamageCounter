@@ -706,18 +706,13 @@ async function main() {
     let log_level = args[1];
 
     if (num === 'auto') {
-        print('自动查找默认网卡...');
-        const device = await findDefaultNetworkDevice(devices);
-        if (device) {
-            num = devices.findIndex(d => d.name === device.name);
-            if (num === -1) {
-                print('未找到默认网卡！');
-                num = undefined;
-            } else {
-                print(`使用网卡: ${num} - ${devices[num].description}`);
-            }
+        print('Auto detecting default network interface...');
+        const device_num = await findDefaultNetworkDevice(devices);
+        if (device_num) {
+            num = device_num;
+            print(`Using network interface: ${num} - ${devices[num].description}`);
         } else {
-            print('未找到默认网卡！');
+            print('Default network interface not found!');
             num = undefined;
         }
     }
@@ -730,6 +725,17 @@ async function main() {
     // 如果命令行没传或者不合法，使用交互
     while (num === undefined || !devices[num]) {
         num = await ask('Please enter the number of the device to capture: ');
+        if (!num) {
+            print('Auto detecting default network interface...');
+            const device_num = await findDefaultNetworkDevice(devices);
+            if (device_num) {
+                num = device_num;
+                print(`Using network interface: ${num} - ${devices[num].description}`);
+            } else {
+                print('Default network interface not found!');
+                num = undefined;
+            }
+        }
         if (!devices[num]) {
             print('Cannot find device ' + num + '!');
         }
