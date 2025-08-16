@@ -694,7 +694,7 @@ let isPaused = false;
 
 async function main() {
     print('Welcome to use Damage Counter for Star Resonance!');
-    print('Version: V2.6');
+    print('Version: V2.7');
     print('GitHub: https://github.com/dmlgzs/StarResonanceDamageCounter');
     for (let i = 0; i < devices.length; i++) {
         print(String(i).padStart(2, ' ') + '.' + (devices[i].description || devices[i].name));
