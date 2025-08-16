@@ -62,9 +62,25 @@ jobs:
           exit 1
         }
 
+    # 复制 LICENSE 和 README.md
+    - name: Copy LICENSE and README.md
+      run: |
+        xcopy /E /I LICENSE dist\LICENSE
+        xcopy /E /I README.md dist\README.md
+
     # 上传构建产物
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: StarResonanceDamageCounter
         path: dist
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        files: |
+          dist/star-resonance-damage-counter.exe
+          dist/commit.txt
+          LICENSE
+          README.md
