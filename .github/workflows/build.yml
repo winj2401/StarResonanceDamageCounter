@@ -1,9 +1,8 @@
 name: Build Windows Executable with pnpm
 
 on:
-  push:
-    branches: [ master ]
-  workflow_dispatch:
+  - push
+  - workflow_dispatch
 
 jobs:
   build-windows-exe:
