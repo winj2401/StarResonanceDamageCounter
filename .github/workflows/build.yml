@@ -25,13 +25,13 @@ jobs:
 
     # 安装 pnpm
     - name: Install pnpm
-      run: npm install -g pnpm
+      run: corepack enable
 
     # 缓存 pnpm store
     - name: Cache pnpm store
       uses: actions/cache@v4
       with:
-        path: ~/.pnpm-store
+        path: D:\.pnpm-store\v10
         key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-
@@ -69,8 +69,8 @@ jobs:
     # 复制 LICENSE 和 README.md
     - name: Copy LICENSE and README.md
       run: |
-        xcopy LICENSE dist\LICENSE
-        xcopy README.md dist\README.md
+        xcopy LICENSE dist\
+        xcopy README.md dist\
 
     # 上传构建产物
     - name: Upload artifact
