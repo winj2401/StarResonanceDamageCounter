@@ -2571,7 +2571,7 @@
 
             // 更新图表 - 增量更新避免闪烁
             function updateChart(userArray) {
-                if (!isChartVisible) return;
+                if (!isChartVisible) return updateChartStatus(0, Object.keys(dpsHistory).length);
                 if (!chart) return;
 
                 const currentTime = Date.now();
