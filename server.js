@@ -1010,7 +1010,7 @@ async function main() {
     }
     c.setMinBytes && c.setMinBytes(0);
     c.on('packet', async function (nbytes, trunc) {
-        eth_queue.push(Buffer.from(buffer));
+        eth_queue.push(Buffer.from(buffer.subarray(0, nbytes)));
     });
     const processEthPacket = async (frameBuffer) => {
         // logger.debug('packet: length ' + nbytes + ' bytes, truncated? ' + (trunc ? 'yes' : 'no'));
