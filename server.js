@@ -555,7 +555,7 @@ class UserDataManager {
             user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
         }
         const targetUser = this.getUser(targetUid);
-        if (targetUser.attr.hp && typeof targetUser.attr.hp == 'number') {
+        if (typeof targetUser.attr.hp == 'number') {
             if (targetUser.attr.max_hp && targetUser.attr.max_hp - targetUser.attr.hp < healing) {
                 targetUser.attr.hp = targetUser.attr.max_hp;
             } else {
@@ -571,7 +571,7 @@ class UserDataManager {
     addTakenDamage(uid, damage) {
         const user = this.getUser(uid);
         user.addTakenDamage(damage);
-        if (user.attr.hp && typeof user.attr.hp == 'number') {
+        if (typeof user.attr.hp == 'number') {
             user.attr.hp = damage > user.attr.hp ? 0 : user.attr.hp - damage;
         }
     }
