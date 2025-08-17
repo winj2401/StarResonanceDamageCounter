@@ -1160,6 +1160,9 @@
                 <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">⚔️ 伤害&DPS</button>
                 <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">❤️ 治疗&HPS</button>
                 <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">📊 全部数据</button>
+                <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">
+                    👀 隐藏未参战
+                </button>
                 <button class="data-group-button" onclick="openColumnSettings()">
                     ⚙️ 表格设置
                 </button>
@@ -1251,6 +1254,9 @@
             // 数据组显示控制相关变量
             let currentDataGroup = 'damage';
             let lastVisiableUserArray = [];
+            
+            // 隐藏未参战角色相关变量
+            let hideInactiveUsers = false;
 
             // 新增技能分析功能
             let skillChart1 = null;
@@ -1852,6 +1858,49 @@
                 return currentUserArray.find((user) => user.id.toString() === userId.toString());
             }
 
+            // 判断角色是否未参与战斗
+            function isUserInactive(user) {
+                // 检查总伤害、总DPS、总HPS是否都为0
+                const totalDamage = user.total_damage?.total || 0;
+                const totalDps = user.total_dps || 0;
+                const totalHps = user.total_hps || 0;
+                
+                // 检查暴击率和幸运率是否为NaN
+                const critRate = user.total_count?.critical / user.total_count?.total;
+                const luckyRate = user.total_count?.lucky / user.total_count?.total;
+                
+                return (totalDamage === 0 && totalDps === 0 && totalHps === 0) || 
+                       (isNaN(critRate) && isNaN(luckyRate));
+            }
+
+            // 切换隐藏未参战角色功能
+            function toggleHideInactiveUsers() {
+                hideInactiveUsers = !hideInactiveUsers;
+                const btn = document.getElementById('hideInactiveBtn');
+                if (hideInactiveUsers) {
+                    btn.classList.add('active');
+                    btn.innerHTML = '👀 显示全部';
+                } else {
+                    btn.classList.remove('active');
+                    btn.innerHTML = '👀 隐藏未参战';
+                }
+                
+                // 重新处理当前数据
+                if (currentUserArray && currentUserArray.length > 0) {
+                    // 重新过滤并更新表格
+                    sortUserArray(currentUserArray);
+                    let visibleUserArray = currentUserArray.filter((user) => visibleUsers[user.id] !== false);
+                    
+                    // 如果启用了隐藏未参战角色，进一步过滤
+                    if (hideInactiveUsers) {
+                        visibleUserArray = visibleUserArray.filter((user) => !isUserInactive(user));
+                    }
+                    
+                    lastVisiableUserArray = visibleUserArray;
+                    updateTables(visibleUserArray);
+                }
+            }
+
             // 处理数据更新（WebSocket和API通用）
             function processDataUpdate(data, updateHistory = true) {
                 try {
@@ -1876,7 +1925,13 @@
                     sortUserArray(userArray);
 
                     // 过滤不可见的用户
-                    const visibleUserArray = userArray.filter((user) => visibleUsers[user.id] !== false);
+                    let visibleUserArray = userArray.filter((user) => visibleUsers[user.id] !== false);
+                    
+                    // 如果启用了隐藏未参战角色，进一步过滤
+                    if (hideInactiveUsers) {
+                        visibleUserArray = visibleUserArray.filter((user) => !isUserInactive(user));
+                    }
+                    
                     lastVisiableUserArray = visibleUserArray;
                     updateTables(visibleUserArray);
 
