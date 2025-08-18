@@ -92,6 +92,7 @@ const NotifyMethod = {
     SyncNearEntities: 0x00000006,
     SyncContainerData: 0x00000015,
     SyncContainerDirtyData: 0x00000016,
+    SyncServerTime: 0x0000002b,
     SyncNearDeltaInfo: 0x0000002d,
     SyncToMeDeltaInfo: 0x0000002e,
 };
@@ -249,6 +250,11 @@ class PacketProcessor {
         if (!targetUuid) return;
         const isTargetPlayer = isUuidPlayer(targetUuid);
         targetUuid = targetUuid.shiftRight(16);
+
+        const attrCollection = aoiSyncDelta.Attrs;
+        if (isTargetPlayer && attrCollection && attrCollection.Attrs) {
+            this._processPlayerAttrs(targetUuid.toNumber(), attrCollection.Attrs);
+        }
 
         const skillEffect = aoiSyncDelta.SkillEffects;
         if (!skillEffect) return;
@@ -501,6 +507,68 @@ class PacketProcessor {
         // this.logger.debug(syncContainerDirtyData.VData.Buffer.toString('hex'));
     }
 
+    _processPlayerAttrs(playerUid, attrs) {
+        for (const attr of attrs) {
+            if (!attr.Id || !attr.RawData) continue;
+            const reader = pbjs.Reader.create(attr.RawData);
+
+            switch (attr.Id) {
+                case AttrType.AttrName:
+                    const playerName = reader.string();
+                    this.userDataManager.setName(playerUid, playerName);
+                    break;
+                case AttrType.AttrProfessionId:
+                    const professionId = reader.int32();
+                    const professionName = getProfessionNameFromId(professionId);
+                    this.userDataManager.setProfession(playerUid, professionName);
+                    break;
+                case AttrType.AttrFightPoint:
+                    const playerFightPoint = reader.int32();
+                    this.userDataManager.setFightPoint(playerUid, playerFightPoint);
+                    break;
+                case AttrType.AttrLevel:
+                    const playerLevel = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'level', playerLevel);
+                    break;
+                case AttrType.AttrRankLevel:
+                    const playerRankLevel = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'rank_level', playerRankLevel);
+                    break;
+                case AttrType.AttrCri:
+                    const playerCri = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'cri', playerCri);
+                    break;
+                case AttrType.AttrLucky:
+                    const playerLucky = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'lucky', playerLucky);
+                    break;
+                case AttrType.AttrHp:
+                    const playerHp = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'hp', playerHp);
+                    break;
+                case AttrType.AttrMaxHp:
+                    const playerMaxHp = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'max_hp', playerMaxHp);
+                    break;
+                case AttrType.AttrElementFlag:
+                    const playerElementFlag = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'element_flag', playerElementFlag);
+                    break;
+                case AttrType.AttrEnergyFlag:
+                    const playerEnergyFlag = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'energy_flag', playerEnergyFlag);
+                    break;
+                case AttrType.AttrReductionLevel:
+                    const playerReductionLevel = reader.int32();
+                    this.userDataManager.setAttrKV(playerUid, 'reduction_level', playerReductionLevel);
+                    break;
+                default:
+                    // this.logger.debug(`Found unknown attrId ${attr.Id} for ${playerUid} ${attr.RawData.toString('base64')}`);
+                    break;
+            }
+        }
+    }
+
     _processSyncNearEntities(payloadBuffer) {
         const syncNearEntities = pb.SyncNearEntities.decode(payloadBuffer);
         // this.logger.debug(JSON.stringify(syncNearEntities, null, 2));
@@ -514,67 +582,8 @@ class PacketProcessor {
             playerUuid = playerUuid.shiftRight(16);
 
             const attrCollection = entity.Attrs;
-            if (!attrCollection) continue;
-
-            if (!attrCollection.Attrs) continue;
-            for (const attr of attrCollection.Attrs) {
-                if (!attr.Id || !attr.RawData) continue;
-                const reader = pbjs.Reader.create(attr.RawData);
-
-                switch (attr.Id) {
-                    case AttrType.AttrName:
-                        const playerName = reader.string();
-                        this.userDataManager.setName(playerUuid.toNumber(), playerName);
-                        break;
-                    case AttrType.AttrProfessionId:
-                        const professionId = reader.int32();
-                        const professionName = getProfessionNameFromId(professionId);
-                        this.userDataManager.setProfession(playerUuid.toNumber(), professionName);
-                        break;
-                    case AttrType.AttrFightPoint:
-                        const playerFightPoint = reader.int32();
-                        this.userDataManager.setFightPoint(playerUuid.toNumber(), playerFightPoint);
-                        break;
-                    case AttrType.AttrLevel:
-                        const playerLevel = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'level', playerLevel);
-                        break;
-                    case AttrType.AttrRankLevel:
-                        const playerRankLevel = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'rank_level', playerRankLevel);
-                        break;
-                    case AttrType.AttrCri:
-                        const playerCri = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'cri', playerCri);
-                        break;
-                    case AttrType.AttrLucky:
-                        const playerLucky = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'lucky', playerLucky);
-                        break;
-                    case AttrType.AttrHp:
-                        const playerHp = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'hp', playerHp);
-                        break;
-                    case AttrType.AttrMaxHp:
-                        const playerMaxHp = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'max_hp', playerMaxHp);
-                        break;
-                    case AttrType.AttrElementFlag:
-                        const playerElementFlag = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'element_flag', playerElementFlag);
-                        break;
-                    case AttrType.AttrEnergyFlag:
-                        const playerEnergyFlag = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'energy_flag', playerEnergyFlag);
-                        break;
-                    case AttrType.AttrReductionLevel:
-                        const playerReductionLevel = reader.int32();
-                        this.userDataManager.setAttrKV(playerUuid.toNumber(), 'reduction_level', playerReductionLevel);
-                        break;
-                    default:
-                        // this.logger.debug(`Found unknown attrId ${attr.Id} ${attr.RawData.toString('base64')}`);
-                        break;
-                }
+            if (attrCollection && attrCollection.Attrs) {
+                this._processPlayerAttrs(playerUuid.toNumber(), attrCollection.Attrs);
             }
         }
     }

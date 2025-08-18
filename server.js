@@ -566,14 +566,6 @@ class UserDataManager {
             const user = this.getUser(uid);
             user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
         }
-        const targetUser = this.getUser(targetUid);
-        if (typeof targetUser.attr.hp == 'number') {
-            if (targetUser.attr.max_hp && targetUser.attr.max_hp - targetUser.attr.hp < healing) {
-                targetUser.attr.hp = targetUser.attr.max_hp;
-            } else {
-                targetUser.attr.hp += healing;
-            }
-        }
     }
 
     /** 添加承伤记录
@@ -583,9 +575,6 @@ class UserDataManager {
     addTakenDamage(uid, damage) {
         const user = this.getUser(uid);
         user.addTakenDamage(damage);
-        if (typeof user.attr.hp == 'number') {
-            user.attr.hp = damage > user.attr.hp ? 0 : user.attr.hp - damage;
-        }
     }
 
     /** 设置用户职业
