@@ -904,7 +904,7 @@
                 background: #f5f5f5;
             }
 
-            .column-option input[type="checkbox"] {
+            .column-option input[type='checkbox'] {
                 width: 16px;
                 height: 16px;
                 margin: 0;
@@ -1121,16 +1121,37 @@
         <div class="chart-container">
             <h3 style="margin-top: 0; display: flex; justify-content: space-between; align-items: center">
                 📈 DPS趋势
-                <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px">
                     <span id="chartStatus" style="font-size: 12px; color: #666; font-weight: normal"></span>
-                    <button id="chartToggleBtn" onclick="toggleChartVisibility()" style="background: none; border: none; font-size: 16px; cursor: pointer; padding: 5px; border-radius: 3px; transition: background-color 0.2s;">
-                        <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button
+                        id="chartToggleBtn"
+                        onclick="toggleChartVisibility()"
+                        style="
+                            background: none;
+                            border: none;
+                            font-size: 16px;
+                            cursor: pointer;
+                            padding: 5px;
+                            border-radius: 3px;
+                            transition: background-color 0.2s;
+                        "
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
                             <polyline points="6,10 8,8 10,10"></polyline>
                         </svg>
                     </button>
                 </div>
             </h3>
-            <div id="dpsChartContent" style="transition: all 0.3s ease; overflow: hidden;">
+            <div id="dpsChartContent" style="transition: all 0.3s ease; overflow: hidden">
                 <div id="dpsChart" style="width: 100%; height: 350px"></div>
             </div>
         </div>
@@ -1160,12 +1181,8 @@
                 <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">⚔️ 伤害&DPS</button>
                 <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">❤️ 治疗&HPS</button>
                 <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">📊 全部数据</button>
-                <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">
-                    👀 隐藏未参战
-                </button>
-                <button class="data-group-button" onclick="openColumnSettings()">
-                    ⚙️ 表格设置
-                </button>
+                <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">👀 隐藏未参战</button>
+                <button class="data-group-button" onclick="openColumnSettings()">⚙️ 表格设置</button>
             </div>
             <div class="table-container">
                 <table id="damageTable">
@@ -1254,7 +1271,7 @@
             // 数据组显示控制相关变量
             let currentDataGroup = 'damage';
             let lastVisiableUserArray = [];
-            
+
             // 隐藏未参战角色相关变量
             let hideInactiveUsers = false;
 
@@ -1864,13 +1881,12 @@
                 const totalDamage = user.total_damage?.total || 0;
                 const totalDps = user.total_dps || 0;
                 const totalHps = user.total_hps || 0;
-                
+
                 // 检查暴击率和幸运率是否为NaN
                 const critRate = user.total_count?.critical / user.total_count?.total;
                 const luckyRate = user.total_count?.lucky / user.total_count?.total;
-                
-                return (totalDamage === 0 && totalDps === 0 && totalHps === 0) || 
-                       (isNaN(critRate) && isNaN(luckyRate));
+
+                return (totalDamage === 0 && totalDps === 0 && totalHps === 0) || (isNaN(critRate) && isNaN(luckyRate));
             }
 
             // 切换隐藏未参战角色功能
@@ -1884,18 +1900,18 @@
                     btn.classList.remove('active');
                     btn.innerHTML = '👀 隐藏未参战';
                 }
-                
+
                 // 重新处理当前数据
                 if (currentUserArray && currentUserArray.length > 0) {
                     // 重新过滤并更新表格
                     sortUserArray(currentUserArray);
                     let visibleUserArray = currentUserArray.filter((user) => visibleUsers[user.id] !== false);
-                    
+
                     // 如果启用了隐藏未参战角色，进一步过滤
                     if (hideInactiveUsers) {
                         visibleUserArray = visibleUserArray.filter((user) => !isUserInactive(user));
                     }
-                    
+
                     lastVisiableUserArray = visibleUserArray;
                     updateTables(visibleUserArray);
                 }
@@ -1926,12 +1942,12 @@
 
                     // 过滤不可见的用户
                     let visibleUserArray = userArray.filter((user) => visibleUsers[user.id] !== false);
-                    
+
                     // 如果启用了隐藏未参战角色，进一步过滤
                     if (hideInactiveUsers) {
                         visibleUserArray = visibleUserArray.filter((user) => !isUserInactive(user));
                     }
-                    
+
                     lastVisiableUserArray = visibleUserArray;
                     updateTables(visibleUserArray);
 
@@ -2003,7 +2019,7 @@
                         otherCells.push(
                             Number(user.realtime_dps).toLocaleString(),
                             Number(user.realtime_dps_max).toLocaleString(),
-                            Number(user.total_dps.toFixed(2)).toLocaleString()
+                            Number(user.total_dps.toFixed(2)).toLocaleString(),
                         );
                     }
                     if (currentDataGroup === 'healing' || currentDataGroup === 'all') {
@@ -2018,7 +2034,7 @@
                         otherCells.push(
                             Number(user.realtime_hps).toLocaleString(),
                             Number(user.realtime_hps_max).toLocaleString(),
-                            Number(user.total_hps.toFixed(2)).toLocaleString()
+                            Number(user.total_hps.toFixed(2)).toLocaleString(),
                         );
                     }
                     let existingCells = row.querySelectorAll('td');
@@ -2294,7 +2310,7 @@
                     chartContent.style.opacity = '1';
                     toggleBtn.classList.remove('collapsed');
                     toggleBtn.title = '隐藏图表';
-                    
+
                     // 重新初始化图表
                     if (!chart) {
                         // 等待动画完成后再初始化图表
@@ -2465,7 +2481,7 @@
             // 初始化ECharts图表
             function initChart() {
                 if (!isChartVisible) return;
-                
+
                 const chartDom = document.getElementById('dpsChart');
                 chart = echarts.init(chartDom);
 
@@ -3190,7 +3206,7 @@
                 realtimeHps: true,
                 realtimeHpsMax: true,
                 hps: true,
-                actions: true
+                actions: true,
             };
 
             // 从localStorage加载列显示设置
@@ -3210,7 +3226,7 @@
 
             // 更新复选框状态
             function updateColumnCheckboxes() {
-                Object.keys(columnVisibility).forEach(column => {
+                Object.keys(columnVisibility).forEach((column) => {
                     const checkbox = document.querySelector(`#col-${column}`);
                     if (checkbox) {
                         checkbox.checked = columnVisibility[column];
@@ -3233,10 +3249,10 @@
             function generateColumnSettingsContent() {
                 const modal = document.getElementById('columnSettingsModal');
                 const content = modal.querySelector('.column-settings-content');
-                
+
                 // 清除现有内容（保留标题）
                 const existingGroups = content.querySelectorAll('.column-group');
-                existingGroups.forEach(group => group.remove());
+                existingGroups.forEach((group) => group.remove());
 
                 const isSimpleMode = document.body.classList.contains('simple-mode');
 
@@ -3249,7 +3265,7 @@
                     { id: 'hp', label: 'HP', column: 'hp' },
                     { id: 'takenDamage', label: '承伤', column: 'takenDamage' },
                     { id: 'critRate', label: '暴击率', column: 'critRate' },
-                    { id: 'luckyRate', label: '幸运率', column: 'luckyRate' }
+                    { id: 'luckyRate', label: '幸运率', column: 'luckyRate' },
                 ]);
                 content.appendChild(baseGroup);
 
@@ -3257,12 +3273,12 @@
                 if (currentDataGroup === 'damage' || currentDataGroup === 'all') {
                     // 伤害数据组
                     const damageOptions = [{ id: 'totalDamage', label: '总伤害', column: 'totalDamage' }];
-                    
+
                     if (!isSimpleMode) {
                         damageOptions.push(
                             { id: 'pureCrit', label: '纯暴击', column: 'pureCrit' },
                             { id: 'pureLucky', label: '纯幸运', column: 'pureLucky' },
-                            { id: 'critLucky', label: '暴击幸运', column: 'critLucky' }
+                            { id: 'critLucky', label: '暴击幸运', column: 'critLucky' },
                         );
                     }
 
@@ -3273,7 +3289,7 @@
                     const dpsGroup = createColumnGroup('⚡ DPS数据', [
                         { id: 'realtimeDps', label: '瞬时DPS', column: 'realtimeDps' },
                         { id: 'realtimeDpsMax', label: '最大瞬时', column: 'realtimeDpsMax' },
-                        { id: 'dps', label: '总DPS', column: 'dps' }
+                        { id: 'dps', label: '总DPS', column: 'dps' },
                     ]);
                     content.appendChild(dpsGroup);
                 }
@@ -3281,12 +3297,12 @@
                 if (currentDataGroup === 'healing' || currentDataGroup === 'all') {
                     // 治疗数据组
                     const healingOptions = [{ id: 'totalHealing', label: '总治疗', column: 'totalHealing' }];
-                    
+
                     if (!isSimpleMode) {
                         healingOptions.push(
                             { id: 'healingPureCrit', label: '纯暴击', column: 'healingPureCrit' },
                             { id: 'healingPureLucky', label: '纯幸运', column: 'healingPureLucky' },
-                            { id: 'healingCritLucky', label: '暴击幸运', column: 'healingCritLucky' }
+                            { id: 'healingCritLucky', label: '暴击幸运', column: 'healingCritLucky' },
                         );
                     }
 
@@ -3297,15 +3313,13 @@
                     const hpsGroup = createColumnGroup('💚 HPS数据', [
                         { id: 'realtimeHps', label: '瞬时HPS', column: 'realtimeHps' },
                         { id: 'realtimeHpsMax', label: '最大瞬时', column: 'realtimeHpsMax' },
-                        { id: 'hps', label: '总HPS', column: 'hps' }
+                        { id: 'hps', label: '总HPS', column: 'hps' },
                     ]);
                     content.appendChild(hpsGroup);
                 }
 
                 // 其他组
-                const otherGroup = createColumnGroup('🔧 其他', [
-                    { id: 'actions', label: '操作', column: 'actions' }
-                ]);
+                const otherGroup = createColumnGroup('🔧 其他', [{ id: 'actions', label: '操作', column: 'actions' }]);
                 content.appendChild(otherGroup);
 
                 // 重新绑定事件
@@ -3325,7 +3339,7 @@
                 const optionsContainer = document.createElement('div');
                 optionsContainer.className = 'column-options';
 
-                options.forEach(option => {
+                options.forEach((option) => {
                     const optionDiv = document.createElement('div');
                     optionDiv.className = 'column-option';
 
@@ -3383,7 +3397,7 @@
                     { column: 'totalDamage', selector: 'th[title="角色在战斗中造成的总伤害"]' },
                     { column: 'pureCrit', selector: 'th[title="角色在战斗中造成的非幸运的暴击伤害"]' },
                     { column: 'pureLucky', selector: 'th[title="角色在战斗中造成的非暴击的幸运伤害"]' },
-                    { column: 'critLucky', selector: 'th[title="角色在战斗中造成的暴击的幸运伤害"]' }
+                    { column: 'critLucky', selector: 'th[title="角色在战斗中造成的暴击的幸运伤害"]' },
                 ];
 
                 damageColumns.forEach(({ column, selector }) => {
@@ -3402,7 +3416,7 @@
                 const dpsColumns = [
                     { column: 'realtimeDps', selector: 'th[title="角色在战斗中的最近一秒造成的伤害"]' },
                     { column: 'realtimeDpsMax', selector: 'th[title="角色在战斗中的最大瞬时DPS"]' },
-                    { column: 'dps', selector: 'th[title="角色在战斗中的总DPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）"]' }
+                    { column: 'dps', selector: 'th[title="角色在战斗中的总DPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）"]' },
                 ];
 
                 dpsColumns.forEach(({ column, selector }) => {
@@ -3422,7 +3436,7 @@
                     { column: 'totalHealing', selector: 'th[title="角色在战斗中造成的总治疗量"]' },
                     { column: 'healingPureCrit', selector: 'th[title="角色在战斗中造成的非幸运的暴击治疗量"]' },
                     { column: 'healingPureLucky', selector: 'th[title="角色在战斗中造成的非暴击的幸运治疗量"]' },
-                    { column: 'healingCritLucky', selector: 'th[title="角色在战斗中造成的暴击的幸运治疗量"]' }
+                    { column: 'healingCritLucky', selector: 'th[title="角色在战斗中造成的暴击的幸运治疗量"]' },
                 ];
 
                 healingColumns.forEach(({ column, selector }) => {
@@ -3441,7 +3455,7 @@
                 const hpsColumns = [
                     { column: 'realtimeHps', selector: 'th[title="角色在战斗中的最近一秒造成的伤害和治疗量"]' },
                     { column: 'realtimeHpsMax', selector: 'th[title="角色在战斗中的最大瞬时HPS"]' },
-                    { column: 'hps', selector: 'th[title="角色在战斗中的总HPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）"]' }
+                    { column: 'hps', selector: 'th[title="角色在战斗中的总HPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）"]' },
                 ];
 
                 hpsColumns.forEach(({ column, selector }) => {
@@ -3480,10 +3494,10 @@
 
                 // 获取所有表体行
                 const rows = table.querySelectorAll('tbody tr');
-                
-                rows.forEach(row => {
+
+                rows.forEach((row) => {
                     const cells = row.querySelectorAll('td');
-                    
+
                     // 基础信息列 (0-7)
                     const baseCols = ['uid', 'nickname', 'job', 'score', 'hp', 'takenDamage', 'critRate', 'luckyRate'];
                     baseCols.forEach((col, index) => {
@@ -3514,7 +3528,7 @@
                         // 详细伤害列（非简洁模式）
                         if (!document.body.classList.contains('simple-mode')) {
                             const detailCols = ['pureCrit', 'pureLucky', 'critLucky'];
-                            detailCols.forEach(col => {
+                            detailCols.forEach((col) => {
                                 if (cells[cellIndex]) {
                                     if (columnVisibility[col]) {
                                         cells[cellIndex].style.removeProperty('display');
@@ -3528,7 +3542,7 @@
 
                         // DPS列
                         const dpsCols = ['realtimeDps', 'realtimeDpsMax', 'dps'];
-                        dpsCols.forEach(col => {
+                        dpsCols.forEach((col) => {
                             if (cells[cellIndex]) {
                                 if (columnVisibility[col]) {
                                     cells[cellIndex].style.removeProperty('display');
@@ -3555,7 +3569,7 @@
                         // 详细治疗列（非简洁模式）
                         if (!document.body.classList.contains('simple-mode')) {
                             const healingDetailCols = ['healingPureCrit', 'healingPureLucky', 'healingCritLucky'];
-                            healingDetailCols.forEach(col => {
+                            healingDetailCols.forEach((col) => {
                                 if (cells[cellIndex]) {
                                     if (columnVisibility[col]) {
                                         cells[cellIndex].style.removeProperty('display');
@@ -3569,7 +3583,7 @@
 
                         // HPS列
                         const hpsCols = ['realtimeHps', 'realtimeHpsMax', 'hps'];
-                        hpsCols.forEach(col => {
+                        hpsCols.forEach((col) => {
                             if (cells[cellIndex]) {
                                 if (columnVisibility[col]) {
                                     cells[cellIndex].style.removeProperty('display');
@@ -3599,14 +3613,12 @@
                 if (!table) return;
 
                 // 计算各组可见列数
-                const damageMainVisible = ['totalDamage', 'pureCrit', 'pureLucky', 'critLucky']
-                    .filter(col => columnVisibility[col]).length;
-                const dpsVisible = ['realtimeDps', 'realtimeDpsMax', 'dps']
-                    .filter(col => columnVisibility[col]).length;
-                const healingMainVisible = ['totalHealing', 'healingPureCrit', 'healingPureLucky', 'healingCritLucky']
-                    .filter(col => columnVisibility[col]).length;
-                const hpsVisible = ['realtimeHps', 'realtimeHpsMax', 'hps']
-                    .filter(col => columnVisibility[col]).length;
+                const damageMainVisible = ['totalDamage', 'pureCrit', 'pureLucky', 'critLucky'].filter((col) => columnVisibility[col]).length;
+                const dpsVisible = ['realtimeDps', 'realtimeDpsMax', 'dps'].filter((col) => columnVisibility[col]).length;
+                const healingMainVisible = ['totalHealing', 'healingPureCrit', 'healingPureLucky', 'healingCritLucky'].filter(
+                    (col) => columnVisibility[col],
+                ).length;
+                const hpsVisible = ['realtimeHps', 'realtimeHpsMax', 'hps'].filter((col) => columnVisibility[col]).length;
 
                 // 更新colspan
                 const damageMainHeader = table.querySelector('.damage-main-col');
@@ -3653,8 +3665,8 @@
 
             // 列设置复选框变化事件
             function initColumnSettings() {
-                document.querySelectorAll('#columnSettingsModal input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
+                document.querySelectorAll('#columnSettingsModal input[type="checkbox"]').forEach((checkbox) => {
+                    checkbox.addEventListener('change', function () {
                         const column = this.getAttribute('data-column');
                         columnVisibility[column] = this.checked;
                         saveColumnSettings();
@@ -3664,7 +3676,7 @@
             }
 
             // 初始化列设置
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 loadColumnSettings();
                 initColumnSettings();
             });
@@ -3752,7 +3764,7 @@
                     <div class="column-settings-title">⚙️ 表格设置</div>
                     <button class="close-btn" onclick="closeColumnSettings()">&times;</button>
                 </div>
-                
+
                 <!-- 内容将通过 JavaScript 动态生成 -->
             </div>
         </div>

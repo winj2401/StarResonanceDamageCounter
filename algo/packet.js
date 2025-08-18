@@ -133,7 +133,7 @@ const EDamageSource = {
     EDamageSourceFall: 3,
     EDamageSourceFakeBullet: 4,
     EDamageSourceOther: 100,
-}
+};
 
 const EDamageProperty = {
     General: 0,
@@ -146,7 +146,7 @@ const EDamageProperty = {
     Light: 7,
     Dark: 8,
     Count: 9,
-}
+};
 
 const getProfessionNameFromId = (professionId) => {
     switch (professionId) {
