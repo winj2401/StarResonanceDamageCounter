@@ -1021,6 +1021,7 @@
         <div style="margin: 20px 0"></div>
         <button class="main-button" onclick="clearData()">✨ 清空统计数据</button>
         <button class="main-button" id="pauseButton" onclick="togglePause()">⏸️ 暂停统计</button>
+        <button class="main-button" onclick="openHpWindow()">❤️ 血条监控</button>
         <button class="main-button" onclick="toggleDarkMode()">🌙 夜间模式</button>
         <button class="main-button" onclick="toggleSimpleMode()">📋 简洁模式</button>
         <button class="main-button" onclick="toggleControlsModal()">⚙️ 用户设置</button>
@@ -2261,6 +2262,94 @@
                 // 在暂停状态下，切换模式后需要重新渲染表格
                 if (isPaused && lastVisiableUserArray.length > 0) {
                     updateTables(lastVisiableUserArray);
+                }
+            }
+
+            // 打开血条监控窗口
+            function openHpWindow() {
+                // 首先尝试画中画模式
+                if ('documentPictureInPicture' in window && window.documentPictureInPicture.requestWindow) {
+                    console.log('尝试使用画中画模式打开血条监控');
+
+                    window.documentPictureInPicture
+                        .requestWindow({
+                            width: 900,
+                            height: 600,
+                            disallowReturnToOpener: true,
+                            preferInitialWindowPlacement: true,
+                        })
+                        .then((pipWindow) => {
+                            // 创建基本的HTML结构
+                            pipWindow.document.write(`
+                            <!DOCTYPE html>
+                            <html lang="zh-CN">
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>血条监控 - 星痕共鸣</title>
+                                <style>
+                                    * {
+                                        margin: 0;
+                                        padding: 0;
+                                        box-sizing: border-box;
+                                    }
+                                    html, body { 
+                                        width: 100%;
+                                        height: 100vh;
+                                        margin: 0; 
+                                        padding: 0; 
+                                        overflow: hidden; 
+                                        background: #1e3c72;
+                                    }
+                                    iframe { 
+                                        width: 100vw; 
+                                        height: 100vh; 
+                                        border: none; 
+                                        display: block;
+                                        position: absolute;
+                                        top: 0;
+                                        left: 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <iframe src="./hp_window.html" title="血条监控"></iframe>
+                            </body>
+                            </html>
+                        `);
+                            pipWindow.document.close();
+
+                            console.log('血条监控窗口已在画中画模式下打开');
+                        })
+                        .catch((error) => {
+                            console.error('画中画模式打开失败，降级到普通窗口:', error);
+                            openHpWindowFallback();
+                        });
+                } else {
+                    console.log('浏览器不支持画中画功能，使用普通窗口');
+                    alert('当前浏览器不支持画中画功能，建议使用 Chrome 116 以上版本的浏览器。');
+                    openHpWindowFallback();
+                }
+            }
+
+            // 降级方案：使用普通窗口打开血条监控
+            function openHpWindowFallback() {
+                try {
+                    const hpWindow = window.open(
+                        './hp_window.html',
+                        'hpWindow',
+                        'width=900,height=600,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no',
+                    );
+
+                    if (hpWindow) {
+                        hpWindow.focus();
+                        console.log('血条监控窗口已在普通窗口模式下打开');
+                    } else {
+                        throw new Error('无法打开新窗口，请检查浏览器弹窗拦截设置');
+                    }
+                } catch (error) {
+                    console.error('打开血条监控窗口失败:', error);
+                    alert('打开血条监控窗口失败: ' + error.message + '\n\n请检查浏览器是否阻止了弹窗。');
                 }
             }
 
