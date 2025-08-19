@@ -28,6 +28,9 @@ const rl = readline.createInterface({
 });
 const devices = cap.deviceList();
 
+// 暂停统计状态
+let isPaused = false;
+
 function ask(question) {
     return new Promise((resolve) => {
         rl.question(question, (answer) => {
@@ -548,6 +551,7 @@ class UserDataManager {
      * @param {number} hpLessenValue - 生命值减少量
      */
     addDamage(uid, skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue = 0) {
+        if (isPaused) return;
         const user = this.getUser(uid);
         user.addDamage(skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue);
     }
@@ -563,6 +567,7 @@ class UserDataManager {
      * @param {number} targetUid - 被治疗的用户ID
      */
     addHealing(uid, skillId, element, healing, isCrit, isLucky, isCauseLucky, targetUid) {
+        if (isPaused) return;
         if (uid !== 0) {
             const user = this.getUser(uid);
             user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
@@ -574,6 +579,7 @@ class UserDataManager {
      * @param {number} damage - 承受的伤害值
      * */
     addTakenDamage(uid, damage) {
+        if (isPaused) return;
         const user = this.getUser(uid);
         user.addTakenDamage(damage);
     }
@@ -692,9 +698,6 @@ class UserDataManager {
         return Array.from(this.users.keys());
     }
 }
-
-// 暂停统计状态
-let isPaused = false;
 
 async function main() {
     print('Welcome to use Damage Counter for Star Resonance!');
@@ -1121,7 +1124,7 @@ async function main() {
                 const packet = _data.subarray(0, packetSize);
                 _data = _data.subarray(packetSize);
                 const processor = new PacketProcessor({ logger, userDataManager });
-                if (!isPaused) processor.processPacket(packet);
+                processor.processPacket(packet);
             } else if (packetSize > 0x0fffff) {
                 logger.error(`Invalid Length!! ${_data.length},${len},${_data.toString('hex')},${tcp_next_seq}`);
                 process.exit(1);
