@@ -684,6 +684,153 @@
                 }
             }
 
+            /* 版本更新弹窗样式 */
+            .update-modal {
+                display: none;
+                position: fixed;
+                z-index: 10002;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.6);
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            .update-modal-content {
+                background-color: #fff;
+                margin: 10% auto;
+                padding: 0;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 500px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                animation: slideIn 0.3s ease-out;
+                overflow: hidden;
+            }
+
+            .update-modal-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px 25px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .update-modal-title {
+                font-size: 20px;
+                font-weight: bold;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .update-modal-close {
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: color 0.2s ease;
+                background: none;
+                border: none;
+                padding: 0;
+            }
+
+            .update-modal-close:hover {
+                color: white;
+                background: none;
+                background-color: none;
+            }
+
+            .update-modal-body {
+                padding: 25px;
+                text-align: center;
+            }
+
+            .version-info {
+                margin: 20px 0;
+            }
+
+            .current-version,
+            .latest-version {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 15px;
+                margin: 8px 0;
+                border-radius: 8px;
+                font-weight: 500;
+            }
+
+            .current-version {
+                background-color: #f8f9fa;
+                border-left: 4px solid #6c757d;
+            }
+
+            .latest-version {
+                background-color: #e8f5e8;
+                border-left: 4px solid #28a745;
+            }
+
+            .update-buttons {
+                display: flex;
+                gap: 15px;
+                justify-content: center;
+                margin-top: 25px;
+            }
+
+            .update-btn {
+                padding: 12px 24px;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .update-btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+
+            .update-btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+
+            .update-btn-secondary {
+                background-color: #6c757d;
+                color: white;
+            }
+
+            .update-btn-secondary:hover {
+                background-color: #5a6268;
+                transform: translateY(-1px);
+            }
+
+            /* 夜间模式下的版本更新弹窗样式 */
+            .dark-mode .update-modal-content {
+                background-color: #2d3748;
+                color: #e2e8f0;
+            }
+
+            .dark-mode .current-version {
+                background-color: #4a5568;
+                color: #e2e8f0;
+            }
+
+            .dark-mode .latest-version {
+                background-color: #2f855a;
+                color: white;
+            }
+
             /* 服务器状态提示样式 */
             .server-status {
                 position: fixed;
@@ -1017,7 +1164,7 @@
     </head>
 
     <body>
-        <h1>🎯 星痕共鸣实时战斗数据展示 V2.8.2</h1>
+        <h1 id="appTitle">🎯 星痕共鸣实时战斗数据展示</h1>
         <div style="margin: 20px 0"></div>
         <button class="main-button" onclick="clearData()">✨ 清空统计数据</button>
         <button class="main-button" id="pauseButton" onclick="togglePause()">⏸️ 暂停统计</button>
@@ -1108,6 +1255,41 @@
                             </thead>
                             <tbody id="skillTableBody"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 版本更新弹窗 -->
+        <div id="updateModal" class="update-modal">
+            <div class="update-modal-content">
+                <div class="update-modal-header">
+                    <h2 class="update-modal-title">
+                        🚀 发现新版本
+                    </h2>
+                    <button class="update-modal-close" onclick="closeUpdateModal()">&times;</button>
+                </div>
+                <div class="update-modal-body">
+                    <p>检测到有新版本可用，建议及时更新以获得最佳使用体验！</p>
+                    
+                    <div class="version-info">
+                        <div class="current-version">
+                            <span>当前版本</span>
+                            <span id="currentVersionText">---</span>
+                        </div>
+                        <div class="latest-version">
+                            <span>最新版本</span>
+                            <span id="latestVersionText">---</span>
+                        </div>
+                    </div>
+
+                    <div class="update-buttons">
+                        <a id="downloadLink" href="#" target="_blank" class="update-btn update-btn-primary">
+                            📥 前往下载
+                        </a>
+                        <button onclick="closeUpdateModal()" class="update-btn update-btn-secondary">
+                            ⏭️ 稍后提醒
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1284,6 +1466,11 @@
             // 图表显示/隐藏控制相关变量
             let isChartVisible = true;
 
+            // 版本检查相关变量
+            const CURRENT_VERSION = '2.8.2';
+            const GITHUB_REPO = 'dmlgzs/StarResonanceDamageCounter';
+            const UPDATE_CHECK_INTERVAL = 4 * 60 * 60 * 1000;
+
             // 从series数据中提取可见最大值
             function getVisibleMaxFromSeries(seriesArray) {
                 let m = 0;
@@ -1397,6 +1584,80 @@
                     skillChart2.dispose();
                     skillChart2 = null;
                 }
+            }
+
+            // 版本检查相关函数
+            async function checkForUpdates() {
+                const now = Date.now();
+                const lastCheck = localStorage.getItem('lastUpdateCheck');
+
+                if (lastCheck && (now - parseInt(lastCheck)) < UPDATE_CHECK_INTERVAL) {
+                    return;
+                }
+
+                try {
+                    console.log('检查版本更新...');
+
+                    // 从GitHub API获取最新release信息
+                    const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    const latestVersion = data.tag_name;
+
+                    console.log(`当前版本: ${CURRENT_VERSION}, 最新版本: ${latestVersion}`);
+
+                    localStorage.setItem('lastUpdateCheck', now.toString());
+
+                    if (isNewerVersion(latestVersion, CURRENT_VERSION)) {
+                        console.log('发现新版本！');
+                        showUpdateModal(latestVersion, data.html_url);
+                    } else {
+                        console.log('当前已是最新版本');
+                    }
+                } catch (error) {
+                    console.warn('检查版本更新失败:', error);
+                }
+            }
+
+            function isNewerVersion(latest, current) {
+                const latestClean = latest.replace(/^[vV]/, '');
+                const currentClean = current.replace(/^[vV]/, '');
+                return latestClean !== currentClean;
+            }
+
+            // 显示版本更新弹窗
+            function showUpdateModal(latestVersion, downloadUrl) {
+                const modal = document.getElementById('updateModal');
+                const currentVersionElement = document.getElementById('currentVersionText');
+                const latestVersionElement = document.getElementById('latestVersionText');
+                const downloadLink = document.getElementById('downloadLink');
+
+                currentVersionElement.textContent = `V${CURRENT_VERSION}`;
+                latestVersionElement.textContent = latestVersion.startsWith('v') || latestVersion.startsWith('V') ? latestVersion : `V${latestVersion}`;
+
+                downloadLink.href = downloadUrl;
+                modal.style.display = 'block';
+
+                modal.onclick = function(event) {
+                    if (event.target === modal) {
+                        closeUpdateModal();
+                    }
+                };
+            }
+            
+            // 关闭版本更新弹窗
+            function closeUpdateModal() {
+                const modal = document.getElementById('updateModal');
+                modal.style.display = 'none';
+                modal.onclick = null;
             }
 
             // 点击弹窗外部区域关闭弹窗
@@ -3773,15 +4034,24 @@
             // 键盘ESC键关闭弹窗
             document.addEventListener('keydown', function (event) {
                 if (event.key === 'Escape') {
-                    const modal = document.getElementById('controlsModal');
-                    if (modal.style.display === 'block') {
+                    const controlsModal = document.getElementById('controlsModal');
+                    const updateModal = document.getElementById('updateModal');
+                    const skillModal = document.getElementById('skillModal');
+                    
+                    if (controlsModal.style.display === 'block') {
                         toggleControlsModal();
+                    } else if (updateModal.style.display === 'block') {
+                        closeUpdateModal();
+                    } else if (skillModal.style.display === 'block') {
+                        closeSkillModal();
                     }
                 }
             });
 
             // 初始化
             function initialize() {
+                document.getElementById('appTitle').innerText += ` V${CURRENT_VERSION}`;
+
                 initTheme();
                 initSimpleMode();
                 initSortMode();
@@ -3801,6 +4071,12 @@
 
                 // 只在初始化时获取一次数据，后续通过WebSocket接收
                 fetchData();
+
+                // 检查版本更新（延迟3秒执行，避免影响页面加载）
+                setTimeout(() => {
+                    checkForUpdates();
+                    setInterval(checkForUpdates, UPDATE_CHECK_INTERVAL);
+                }, 3000);
 
                 // 添加事件委托处理技能按钮点击
                 const damageTable = document.getElementById('damageTable');
