@@ -307,6 +307,9 @@ class PacketProcessor {
                     //玩家受到伤害
                     this.userDataManager.addTakenDamage(targetUuid.toNumber(), damage.toNumber());
                 }
+                if (isDead) {
+                    this.userDataManager.setAttrKV(targetUuid.toNumber(), 'hp', 0);
+                }
             } else {
                 //非玩家目标
                 if (isHeal) {
