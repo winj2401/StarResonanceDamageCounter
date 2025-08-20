@@ -455,6 +455,7 @@ class UserDataManager {
         this.pendingSave = false;
 
         this.hpCache = new Map(); // 这个经常变化的就不存盘了
+        this.startTime = Date.now();
     }
 
     /** 加载用户缓存 */
@@ -703,6 +704,7 @@ class UserDataManager {
     /** 清除所有用户数据 */
     clearAll() {
         this.users.clear();
+        this.startTime = Date.now();
     }
 
     /** 获取用户列表 */
