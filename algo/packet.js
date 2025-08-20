@@ -205,6 +205,25 @@ const getDamageElement = (damageProperty) => {
     }
 };
 
+const getDamageType = (damageSource) => {
+    switch (damageSource) {
+        case EDamageSource.EDamageSourceSkill:
+            return 'Skill';
+        case EDamageSource.EDamageSourceBullet:
+            return 'Bullet';
+        case EDamageSource.EDamageSourceBuff:
+            return 'Buff';
+        case EDamageSource.EDamageSourceFall:
+            return 'Fall';
+        case EDamageSource.EDamageSourceFakeBullet:
+            return 'FBullet';
+        case EDamageSource.EDamageSourceOther:
+            return 'Other';
+        default:
+            return 'Unknown';
+    }
+};
+
 const isUuidPlayer = (uuid) => {
     return (uuid.toBigInt() & 0xffffn) === 640n;
 };
@@ -338,31 +357,33 @@ class PacketProcessor {
             if (isCauseLucky) extra.push('CauseLucky');
             if (extra.length === 0) extra = ['Normal'];
 
-            const actionType = isHeal ? 'Healing' : 'Damage';
+            const actionType = isHeal ? 'HEAL' : 'DMG';
 
-            let infoStr = `Src: ${attackerUuid.toString()}`;
+            let infoStr = `SRC: `;
             if (isAttackerPlayer) {
                 const attacker = this.userDataManager.getUser(attackerUuid.toNumber());
                 if (attacker.name) {
-                    infoStr = `Src: ${attacker.name}`;
-                } else {
-                    infoStr += ' (player)';
+                    infoStr += attacker.name;
                 }
+                infoStr += `#${attackerUuid.toString()}(player)`;
+            } else {
+                infoStr += `#${attackerUuid.toString()}(enemy)`;
             }
 
-            let targetName = `${targetUuid.toString()}`;
+            let targetName = '';
             if (isTargetPlayer) {
                 const target = this.userDataManager.getUser(targetUuid.toNumber());
                 if (target.name) {
-                    targetName = target.name;
-                } else {
-                    targetName += ' (player)';
+                    targetName += target.name;
                 }
+                targetName += `#${targetUuid.toString()}(player)`;
+            } else {
+                targetName += `#${targetUuid.toString()}(enemy)`;
             }
-            infoStr += ` Tgt: ${targetName}`;
+            infoStr += ` TGT: ${targetName}`;
 
             this.logger.info(
-                `Type: ${damageSource} ${infoStr} Skill/Buff: ${skillId} ${actionType}: ${damage} ${isHeal ? '' : ` HpLessen: ${hpLessenValue}`} Ele: ${damageElement.slice(-1)} Ext: ${extra.join('|')}`,
+                `[${actionType}] TYP: ${getDamageType(damageSource)} ${infoStr} ID: ${skillId} VAL: ${damage} ${isHeal ? '' : `HPLSN: ${hpLessenValue} `}ELEM: ${damageElement.slice(-1)} EXT: ${extra.join('|')}`,
             );
         }
     }
