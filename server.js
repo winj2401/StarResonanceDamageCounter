@@ -19,7 +19,7 @@ const app = express();
 const { exec } = require('child_process');
 const findDefaultNetworkDevice = require('./algo/netInterfaceUtil');
 
-const skillConfig = require('./skill_names.json').skill_names;
+const skillConfig = require('./tables/skill_names.json').skill_names;
 const VERSION = '2.8.3';
 
 const rl = readline.createInterface({
