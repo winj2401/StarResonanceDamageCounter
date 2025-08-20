@@ -634,12 +634,13 @@ class PacketProcessor {
                 case AttrType.AttrName:
                     const enemyName = reader.string();
                     enemyCache.name.set(enemyUid, enemyName);
+                    this.logger.info(`Found enemy name ${enemyName} for ${enemyUid}`);
                     break;
                 case AttrType.AttrId:
                     const attrId = reader.int32();
                     const name = monsterNames[attrId];
-                    console.log(attrId, name);
                     if (name) {
+                        this.logger.info(`Found enemy name ${name} for ${enemyUid}`);
                         enemyCache.name.set(enemyUid, name);
                     }
                     break;
