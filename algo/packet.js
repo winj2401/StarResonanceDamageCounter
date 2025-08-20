@@ -5,6 +5,8 @@ const pbjs = require('protobufjs/minimal');
 const pb2 = require('./BlueProtobuf_pb');
 const fs = require('fs');
 
+const monsterNames = require('../tables/monster_names.json');
+
 class BinaryReader {
     constructor(buffer, offset = 0) {
         this.buffer = buffer;
@@ -99,6 +101,7 @@ const NotifyMethod = {
 
 const AttrType = {
     AttrName: 0x01,
+    AttrId: 0x0a,
     AttrProfessionId: 0xdc,
     AttrFightPoint: 0x272e,
     AttrLevel: 0x2710,
@@ -228,6 +231,10 @@ const isUuidPlayer = (uuid) => {
     return (uuid.toBigInt() & 0xffffn) === 640n;
 };
 
+const isUuidMonster = (uuid) => {
+    return (uuid.toBigInt() & 0xffffn) === 64n;
+};
+
 const doesStreamHaveIdentifier = (reader) => {
     let identifier = reader.readUInt32LE();
     reader.readInt32();
@@ -247,6 +254,11 @@ const streamReadString = (reader) => {
 };
 
 let currentUserUuid = Long.ZERO;
+const enemyCache = {
+    name: new Map(),
+    hp: new Map(),
+    maxHp: new Map(),
+};
 
 class PacketProcessor {
     constructor({ logger, userDataManager }) {
@@ -268,11 +280,16 @@ class PacketProcessor {
         let targetUuid = aoiSyncDelta.Uuid;
         if (!targetUuid) return;
         const isTargetPlayer = isUuidPlayer(targetUuid);
+        const isTargetMonster = isUuidMonster(targetUuid);
         targetUuid = targetUuid.shiftRight(16);
 
         const attrCollection = aoiSyncDelta.Attrs;
-        if (isTargetPlayer && attrCollection && attrCollection.Attrs) {
-            this._processPlayerAttrs(targetUuid.toNumber(), attrCollection.Attrs);
+        if (attrCollection && attrCollection.Attrs) {
+            if (isTargetPlayer) {
+                this._processPlayerAttrs(targetUuid.toNumber(), attrCollection.Attrs);
+            } else if (isTargetMonster) {
+                this._processEnemyAttrs(targetUuid.toNumber(), attrCollection.Attrs);
+            }
         }
 
         const skillEffect = aoiSyncDelta.SkillEffects;
@@ -367,6 +384,9 @@ class PacketProcessor {
                 }
                 infoStr += `#${attackerUuid.toString()}(player)`;
             } else {
+                if (enemyCache.name.has(attackerUuid.toNumber())) {
+                    infoStr += enemyCache.name.get(attackerUuid.toNumber());
+                }
                 infoStr += `#${attackerUuid.toString()}(enemy)`;
             }
 
@@ -378,6 +398,9 @@ class PacketProcessor {
                 }
                 targetName += `#${targetUuid.toString()}(player)`;
             } else {
+                if (enemyCache.name.has(targetUuid.toNumber())) {
+                    targetName += enemyCache.name.get(targetUuid.toNumber());
+                }
                 targetName += `#${targetUuid.toString()}(enemy)`;
             }
             infoStr += ` TGT: ${targetName}`;
@@ -602,21 +625,62 @@ class PacketProcessor {
         }
     }
 
+    _processEnemyAttrs(enemyUid, attrs) {
+        for (const attr of attrs) {
+            if (!attr.Id || !attr.RawData) continue;
+            const reader = pbjs.Reader.create(attr.RawData);
+            this.logger.debug(`Found attrId ${attr.Id} for E${enemyUid} ${attr.RawData.toString('base64')}`);
+            switch (attr.Id) {
+                case AttrType.AttrName:
+                    const enemyName = reader.string();
+                    enemyCache.name.set(enemyUid, enemyName);
+                    break;
+                case AttrType.AttrId:
+                    const attrId = reader.int32();
+                    const name = monsterNames[attrId];
+                    console.log(attrId, name);
+                    if (name) {
+                        enemyCache.name.set(enemyUid, name);
+                    }
+                    break;
+                case AttrType.AttrHp:
+                    const enemyHp = reader.int32();
+                    enemyCache.hp.set(enemyUid, enemyHp);
+                    break;
+                case AttrType.AttrMaxHp:
+                    const enemyMaxHp = reader.int32();
+                    enemyCache.maxHp.set(enemyUid, enemyMaxHp);
+                    break;
+                default:
+                    // this.logger.debug(`Found unknown attrId ${attr.Id} for E${enemyUid} ${attr.RawData.toString('base64')}`);
+                    break;
+            }
+        }
+    }
+
     _processSyncNearEntities(payloadBuffer) {
         const syncNearEntities = pb.SyncNearEntities.decode(payloadBuffer);
         // this.logger.debug(JSON.stringify(syncNearEntities, null, 2));
 
         if (!syncNearEntities.Appear) return;
         for (const entity of syncNearEntities.Appear) {
-            if (entity.EntType !== pb.EEntityType.EntChar) continue;
-
-            let playerUuid = entity.Uuid;
-            if (!playerUuid) continue;
-            playerUuid = playerUuid.shiftRight(16);
-
+            const entityUuid = entity.Uuid;
+            if (!entityUuid) continue;
+            const entityUid = entityUuid.shiftRight(16).toNumber();
             const attrCollection = entity.Attrs;
+
             if (attrCollection && attrCollection.Attrs) {
-                this._processPlayerAttrs(playerUuid.toNumber(), attrCollection.Attrs);
+                switch (entity.EntType) {
+                    case pb.EEntityType.EntMonster:
+                        this._processEnemyAttrs(entityUid, attrCollection.Attrs);
+                        break;
+                    case pb.EEntityType.EntChar:
+                        this._processPlayerAttrs(entityUid, attrCollection.Attrs);
+                        break;
+                    default:
+                        // this.logger.debug('Get AttrCollection for Unknown EntType' + entity.EntType);
+                        break;
+                }
             }
         }
     }
