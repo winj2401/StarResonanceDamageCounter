@@ -382,9 +382,18 @@ class PacketProcessor {
             }
             infoStr += ` TGT: ${targetName}`;
 
-            this.logger.info(
-                `[${actionType}] TYP: ${getDamageType(damageSource)} ${infoStr} ID: ${skillId} VAL: ${damage} ${isHeal ? '' : `HPLSN: ${hpLessenValue} `}ELEM: ${damageElement.slice(-1)} EXT: ${extra.join('|')}`,
-            );
+            const dmgLogArr = [
+                `[${actionType}]`,
+                `TYP: ${getDamageType(damageSource)}`,
+                infoStr,
+                `ID: ${skillId}`,
+                `VAL: ${damage}`,
+                `HPLSN: ${hpLessenValue}`,
+                `ELEM: ${damageElement.slice(-1)}`,
+                `EXT: ${extra.join('|')}`,
+            ];
+            const dmgLog = dmgLogArr.join(' ');
+            this.logger.info(dmgLog);
         }
     }
 
