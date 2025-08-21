@@ -507,6 +507,7 @@ class UserDataManager {
 
     /** 强制立即保存用户缓存 - 用于程序退出等场景 */
     async forceUserCacheSave() {
+        await this.saveAllUserData(this.users, this.startTime);
         if (this.saveThrottleTimer) {
             clearTimeout(this.saveThrottleTimer);
             this.saveThrottleTimer = null;
@@ -617,7 +618,6 @@ class UserDataManager {
             this.logger.error('Failed to save log:', error);
         }
     }
-
 
     /** 设置用户职业
      * @param {number} uid - 用户ID
@@ -750,7 +750,7 @@ class UserDataManager {
      * @param {Map} usersToSave - 要保存的用户数据Map
      * @param {number} startTime - 数据开始时间
      */
-    async saveAllUserData(usersToSave = null, startTime = null) {
+    async saveAllUserData(usersToSave, startTime) {
         try {
             const endTime = Date.now();
             const users = usersToSave || this.users;
@@ -787,12 +787,20 @@ class UserDataManager {
                 await fsPromises.writeFile(userDataPath, JSON.stringify(userData, null, 2), 'utf8');
             }
 
-            await fsPromises.writeFile(path.join(logDir, 'summary.json'), JSON.stringify({
-                startTime: timestamp,
-                endTime,
-                duration: endTime - timestamp,
-                userCount: users.size,
-            }, null, 2), 'utf8');
+            await fsPromises.writeFile(
+                path.join(logDir, 'summary.json'),
+                JSON.stringify(
+                    {
+                        startTime: timestamp,
+                        endTime,
+                        duration: endTime - timestamp,
+                        userCount: users.size,
+                    },
+                    null,
+                    2,
+                ),
+                'utf8',
+            );
 
             this.logger.info(`Saved data for ${users.size} users to ${logDir}`);
         } catch (error) {
@@ -872,7 +880,7 @@ async function main() {
     });
 
     const userDataManager = new UserDataManager(logger);
-    
+
     // 异步初始化用户数据管理器
     await userDataManager.initialize();
 
