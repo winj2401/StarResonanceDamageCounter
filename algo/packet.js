@@ -417,6 +417,7 @@ class PacketProcessor {
             ];
             const dmgLog = dmgLogArr.join(' ');
             this.logger.info(dmgLog);
+            this.userDataManager.addLog(dmgLog);
         }
     }
 

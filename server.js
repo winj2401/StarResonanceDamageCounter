@@ -594,6 +594,31 @@ class UserDataManager {
         user.addTakenDamage(damage);
     }
 
+    /** 添加日志记录
+     * @param {string} log - 日志内容
+     * */
+    async addLog(log) {
+        if (isPaused) return;
+        try {
+            const logDir = path.join('./logs', String(this.startTime));
+            const logFile = path.join(logDir, 'fight.log');
+
+            try {
+                await fsPromises.access(logDir);
+            } catch (error) {
+                await fsPromises.mkdir(logDir, { recursive: true });
+            }
+
+            const timestamp = new Date().toISOString();
+            const logEntry = `[${timestamp}] ${log}\n`;
+
+            await fsPromises.appendFile(logFile, logEntry, 'utf8');
+        } catch (error) {
+            this.logger.error('Failed to save log:', error);
+        }
+    }
+
+
     /** 设置用户职业
      * @param {number} uid - 用户ID
      * @param {string} profession - 职业名称
