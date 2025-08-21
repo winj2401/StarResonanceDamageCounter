@@ -9,6 +9,7 @@ const net = require('net');
 const path = require('path');
 const { Server } = require('socket.io');
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 const PacketProcessor = require('./algo/packet');
 const Readable = require('stream').Readable;
 const Cap = cap.Cap;
@@ -447,7 +448,6 @@ class UserDataManager {
         this.users = new Map();
         this.userCache = new Map(); // 用户名字和职业缓存
         this.cacheFilePath = './users.json';
-        this.loadUserCache();
 
         // 节流相关配置
         this.saveThrottleDelay = 2000; // 2秒节流延迟，避免频繁磁盘写入
@@ -458,25 +458,31 @@ class UserDataManager {
         this.startTime = Date.now();
     }
 
+    /** 初始化方法 - 异步加载用户缓存 */
+    async initialize() {
+        await this.loadUserCache();
+    }
+
     /** 加载用户缓存 */
-    loadUserCache() {
+    async loadUserCache() {
         try {
-            if (fs.existsSync(this.cacheFilePath)) {
-                const data = fs.readFileSync(this.cacheFilePath, 'utf8');
-                const cacheData = JSON.parse(data);
-                this.userCache = new Map(Object.entries(cacheData));
-                this.logger.info(`Loaded ${this.userCache.size} user cache entries`);
-            }
+            await fsPromises.access(this.cacheFilePath);
+            const data = await fsPromises.readFile(this.cacheFilePath, 'utf8');
+            const cacheData = JSON.parse(data);
+            this.userCache = new Map(Object.entries(cacheData));
+            this.logger.info(`Loaded ${this.userCache.size} user cache entries`);
         } catch (error) {
-            this.logger.error('Failed to load user cache:', error);
+            if (error.code !== 'ENOENT') {
+                this.logger.error('Failed to load user cache:', error);
+            }
         }
     }
 
     /** 保存用户缓存 */
-    saveUserCache() {
+    async saveUserCache() {
         try {
             const cacheData = Object.fromEntries(this.userCache);
-            fs.writeFileSync(this.cacheFilePath, JSON.stringify(cacheData, null, 2), 'utf8');
+            await fsPromises.writeFile(this.cacheFilePath, JSON.stringify(cacheData, null, 2), 'utf8');
         } catch (error) {
             this.logger.error('Failed to save user cache:', error);
         }
@@ -490,9 +496,9 @@ class UserDataManager {
             clearTimeout(this.saveThrottleTimer);
         }
 
-        this.saveThrottleTimer = setTimeout(() => {
+        this.saveThrottleTimer = setTimeout(async () => {
             if (this.pendingSave) {
-                this.saveUserCache();
+                await this.saveUserCache();
                 this.pendingSave = false;
                 this.saveThrottleTimer = null;
             }
@@ -500,13 +506,13 @@ class UserDataManager {
     }
 
     /** 强制立即保存用户缓存 - 用于程序退出等场景 */
-    forceUserCacheSave() {
+    async forceUserCacheSave() {
         if (this.saveThrottleTimer) {
             clearTimeout(this.saveThrottleTimer);
             this.saveThrottleTimer = null;
         }
         if (this.pendingSave) {
-            this.saveUserCache();
+            await this.saveUserCache();
             this.pendingSave = false;
         }
     }
@@ -782,17 +788,20 @@ async function main() {
     });
 
     const userDataManager = new UserDataManager(logger);
+    
+    // 异步初始化用户数据管理器
+    await userDataManager.initialize();
 
     // 进程退出时保存用户缓存
-    process.on('SIGINT', () => {
+    process.on('SIGINT', async () => {
         console.log('\nSaving user cache...');
-        userDataManager.forceUserCacheSave();
+        await userDataManager.forceUserCacheSave();
         process.exit(0);
     });
 
-    process.on('SIGTERM', () => {
+    process.on('SIGTERM', async () => {
         console.log('\nSaving user cache...');
-        userDataManager.forceUserCacheSave();
+        await userDataManager.forceUserCacheSave();
         process.exit(0);
     });
 
