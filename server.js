@@ -734,13 +734,72 @@ class UserDataManager {
 
     /** 清除所有用户数据 */
     clearAll() {
-        this.users.clear();
+        const usersToSave = this.users;
+        const saveStartTime = this.startTime;
+        this.users = new Map();
         this.startTime = Date.now();
+        this.saveAllUserData(usersToSave, saveStartTime);
     }
 
     /** 获取用户列表 */
     getUserIds() {
         return Array.from(this.users.keys());
+    }
+
+    /** 保存所有用户数据到历史记录
+     * @param {Map} usersToSave - 要保存的用户数据Map
+     * @param {number} startTime - 数据开始时间
+     */
+    async saveAllUserData(usersToSave = null, startTime = null) {
+        try {
+            const endTime = Date.now();
+            const users = usersToSave || this.users;
+            const timestamp = startTime || this.startTime;
+            const logDir = path.join('./logs', String(timestamp));
+            const usersDir = path.join(logDir, 'users');
+
+            try {
+                await fsPromises.access(usersDir);
+            } catch (error) {
+                await fsPromises.mkdir(usersDir, { recursive: true });
+            }
+
+            // 保存所有用户数据汇总
+            const allUsersData = {};
+            for (const [uid, user] of users.entries()) {
+                allUsersData[uid] = user.getSummary();
+            }
+
+            const allUserDataPath = path.join(logDir, 'allUserData.json');
+            await fsPromises.writeFile(allUserDataPath, JSON.stringify(allUsersData, null, 2), 'utf8');
+
+            // 保存每个用户的详细数据
+            for (const [uid, user] of users.entries()) {
+                const userData = {
+                    uid: user.uid,
+                    name: user.name,
+                    profession: user.profession,
+                    skills: user.getSkillSummary(),
+                    attr: user.attr,
+                };
+
+                const userDataPath = path.join(usersDir, `${uid}.json`);
+                await fsPromises.writeFile(userDataPath, JSON.stringify(userData, null, 2), 'utf8');
+            }
+
+            await fsPromises.writeFile(path.join(logDir, 'summary.json'), JSON.stringify({
+                startTime: timestamp,
+                endTime,
+                duration: endTime - timestamp,
+                userCount: users.size,
+            }, null, 2), 'utf8');
+
+            this.logger.info(`Saved data for ${users.size} users to ${logDir}`);
+        } catch (error) {
+            this.logger.error('Failed to save all user data:', error);
+            throw error;
+        }
+        usersToSave.clear();
     }
 }
 
@@ -857,6 +916,7 @@ async function main() {
         };
         res.json(data);
     });
+
     app.get('/api/clear', (req, res) => {
         userDataManager.clearAll();
         logger.info('Statistics have been cleared!');
@@ -902,6 +962,93 @@ async function main() {
             code: 0,
             data: skillData,
         });
+    });
+
+    // 历史数据概览
+    app.get('/api/history/:timestamp/summary', async (req, res) => {
+        const { timestamp } = req.params;
+        const historyFilePath = path.join('./logs', timestamp, 'summary.json');
+
+        try {
+            const data = await fsPromises.readFile(historyFilePath, 'utf8');
+            const summaryData = JSON.parse(data);
+            res.json({
+                code: 0,
+                data: summaryData,
+            });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                logger.warn('History summary file not found:', error);
+                res.status(404).json({
+                    code: 1,
+                    msg: 'History summary file not found',
+                });
+            } else {
+                logger.error('Failed to read history summary file:', error);
+                res.status(500).json({
+                    code: 1,
+                    msg: 'Failed to read history summary file',
+                });
+            }
+        }
+    });
+
+    // 历史数据
+    app.get('/api/history/:timestamp/data', async (req, res) => {
+        const { timestamp } = req.params;
+        const historyFilePath = path.join('./logs', timestamp, 'allUserData.json');
+
+        try {
+            const data = await fsPromises.readFile(historyFilePath, 'utf8');
+            const userData = JSON.parse(data);
+            res.json({
+                code: 0,
+                data: userData,
+            });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                logger.warn('History data file not found:', error);
+                res.status(404).json({
+                    code: 1,
+                    msg: 'History data file not found',
+                });
+            } else {
+                logger.error('Failed to read history data file:', error);
+                res.status(500).json({
+                    code: 1,
+                    msg: 'Failed to read history data file',
+                });
+            }
+        }
+    });
+
+    // 获取历史技能数据
+    app.get('/api/history/:timestamp/skill/:uid', async (req, res) => {
+        const { timestamp, uid } = req.params;
+        const historyFilePath = path.join('./logs', timestamp, 'users', `${uid}.json`);
+
+        try {
+            const data = await fsPromises.readFile(historyFilePath, 'utf8');
+            const skillData = JSON.parse(data);
+            res.json({
+                code: 0,
+                data: skillData,
+            });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                logger.warn('History skill file not found:', error);
+                res.status(404).json({
+                    code: 1,
+                    msg: 'History skill file not found',
+                });
+            } else {
+                logger.error('Failed to read history skill file:', error);
+                res.status(500).json({
+                    code: 1,
+                    msg: 'Failed to read history skill file',
+                });
+            }
+        }
     });
 
     // WebSocket 连接处理
