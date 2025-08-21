@@ -4,3 +4,4 @@ users.json
 SyncContainerData.dat
 SyncContainerData.json
 dist/
+logs/
