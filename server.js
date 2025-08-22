@@ -1059,6 +1059,33 @@ async function main() {
         }
     });
 
+    // 历史数据列表
+    app.get('/api/history/list', async (req, res) => {
+        try {
+            const data = (await fsPromises.readdir('./logs', { withFileTypes: true }))
+                .filter((e) => e.isDirectory() && /^\d+$/.test(e.name))
+                .map((e) => e.name);
+            res.json({
+                code: 0,
+                data: data,
+            });
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                logger.warn('History path not found:', error);
+                res.status(404).json({
+                    code: 1,
+                    msg: 'History path not found',
+                });
+            } else {
+                logger.error('Failed to load history path:', error);
+                res.status(500).json({
+                    code: 1,
+                    msg: 'Failed to load history path',
+                });
+            }
+        }
+    });
+
     // WebSocket 连接处理
     io.on('connection', (socket) => {
         logger.info('WebSocket client connected: ' + socket.id);
