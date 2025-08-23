@@ -768,7 +768,7 @@
                     console.log(data);
                     return {
                         timestamp: timestamp,
-                        name: new Date(data.data.startTime).toLocaleString() + ' > ' + new Date(data.data.endTime).toLocaleString(),
+                        name: `${data.data.userCount}人 ${new Date(data.data.startTime).toLocaleString()} ➡ ${new Date(data.data.endTime).toLocaleString()}`,
                     };
                 } catch (err) {
                     console.error('获取历史列表失败：', err);
