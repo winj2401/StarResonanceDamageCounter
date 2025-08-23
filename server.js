@@ -459,6 +459,15 @@ class UserDataManager {
 
         this.logLock = new Lock();
         this.logDirExist = new Set();
+
+        // 自动保存
+        this.lastAutoSaveTime = 0;
+        this.lastLogTime = 0;
+        setInterval(() => {
+            if (this.lastLogTime < this.lastAutoSaveTime) return;
+            this.lastAutoSaveTime = Date.now();
+            this.saveAllUserData();
+        }, 10 * 1000);
     }
 
     /** 初始化方法 - 异步加载用户缓存 */
@@ -609,6 +618,8 @@ class UserDataManager {
         const timestamp = new Date().toISOString();
         const logEntry = `[${timestamp}] ${log}\n`;
 
+        this.lastLogTime = Date.now();
+
         await this.logLock.acquire();
         try {
             if (!this.logDirExist.has(logDir)) {
@@ -745,6 +756,8 @@ class UserDataManager {
         const saveStartTime = this.startTime;
         this.users = new Map();
         this.startTime = Date.now();
+        this.lastAutoSaveTime = 0;
+        this.lastLogTime = 0;
         this.saveAllUserData(usersToSave, saveStartTime);
     }
 
@@ -757,7 +770,7 @@ class UserDataManager {
      * @param {Map} usersToSave - 要保存的用户数据Map
      * @param {number} startTime - 数据开始时间
      */
-    async saveAllUserData(usersToSave, startTime) {
+    async saveAllUserData(usersToSave = null, startTime = null) {
         try {
             const endTime = Date.now();
             const users = usersToSave || this.users;
@@ -804,7 +817,7 @@ class UserDataManager {
 
             await fsPromises.writeFile(path.join(logDir, 'summary.json'), JSON.stringify(summary, null, 2), 'utf8');
 
-            this.logger.info(`Saved data for ${summary.userCount} users to ${logDir}`);
+            this.logger.debug(`Saved data for ${summary.userCount} users to ${logDir}`);
         } catch (error) {
             this.logger.error('Failed to save all user data:', error);
             throw error;
