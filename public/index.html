@@ -79,12 +79,12 @@
                             <div class="skill-user-info-value" id="skillUserProfession">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">生体元等级</div>
-                            <div class="skill-user-info-value" id="userLevel">-</div>
+                            <div class="skill-user-info-label">战力评分</div>
+                            <div class="skill-user-info-value" id="fightPoint">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">臂章等级</div>
-                            <div class="skill-user-info-value" id="userRankLevel">-</div>
+                            <div class="skill-user-info-label">最大HP</div>
+                            <div class="skill-user-info-value" id="maxHp">-</div>
                         </div>
                         <div class="skill-user-info-item">
                             <div class="skill-user-info-label">技能数量</div>
@@ -101,7 +101,7 @@
                         <table class="skill-table" id="skillTable">
                             <thead>
                                 <tr>
-                                    <th>技能ID</th>
+                                    <th>技能名称</th>
                                     <th>类型</th>
                                     <th>元素</th>
                                     <th>总数值</th>
@@ -540,13 +540,15 @@
 
             // 渲染技能数据
             function renderSkillData(skillData) {
+                const userInfo = getUserFromArray(skillData.uid);
+
                 // 更新用户信息
                 document.getElementById('skillUserId').textContent = skillData.uid;
                 document.getElementById('skillUserName').textContent = `${skillData.name || `UID:${skillData.uid}`} - 技能分析`;
                 document.getElementById('skillUserNickname').textContent = skillData.name;
                 document.getElementById('skillUserProfession').textContent = skillData.profession;
-                document.getElementById('userLevel').textContent = skillData.attr ? skillData.attr.level || '未知' : '未知';
-                document.getElementById('userRankLevel').textContent = skillData.attr ? skillData.attr.rank_level || '未知' : '未知';
+                document.getElementById('fightPoint').textContent = userInfo ? userInfo.fightPoint || '未知' : '未知';
+                document.getElementById('maxHp').textContent = skillData.attr ? skillData.attr.max_hp || '未知' : '未知';
                 document.getElementById('skillCount').textContent = Object.keys(skillData.skills).length;
 
                 // 把对象转数组并排序
