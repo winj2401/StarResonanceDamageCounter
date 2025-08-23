@@ -208,7 +208,7 @@ const getDamageElement = (damageProperty) => {
     }
 };
 
-const getDamageType = (damageSource) => {
+const getDamageSource = (damageSource) => {
     switch (damageSource) {
         case EDamageSource.EDamageSourceSkill:
             return 'Skill';
@@ -407,7 +407,7 @@ class PacketProcessor {
 
             const dmgLogArr = [
                 `[${actionType}]`,
-                `TYP: ${getDamageType(damageSource)}`,
+                `DS: ${getDamageSource(damageSource)}`,
                 infoStr,
                 `ID: ${skillId}`,
                 `VAL: ${damage}`,
