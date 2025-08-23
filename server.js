@@ -8,7 +8,6 @@ const http = require('http');
 const net = require('net');
 const path = require('path');
 const { Server } = require('socket.io');
-const fs = require('fs');
 const fsPromises = require('fs').promises;
 const PacketProcessor = require('./algo/packet');
 const Readable = require('stream').Readable;

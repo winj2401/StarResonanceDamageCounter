@@ -2,7 +2,6 @@ const zlib = require('zlib');
 const pb = require('./blueprotobuf');
 const Long = require('long');
 const pbjs = require('protobufjs/minimal');
-const pb2 = require('./BlueProtobuf_pb');
 const fs = require('fs');
 
 const monsterNames = require('../tables/monster_names.json');
