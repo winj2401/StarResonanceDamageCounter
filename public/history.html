@@ -288,7 +288,7 @@
                 document.getElementById('skillUserId').textContent = skillData.uid;
                 document.getElementById('skillUserName').textContent = `${skillData.name || `UID:${skillData.uid}`} - 技能分析`;
                 document.getElementById('skillUserNickname').textContent = skillData.name;
-                document.getElementById('skillUserProfession').textContent = skillData.profession;
+                document.getElementById('skillUserProfession').textContent = userInfo ? userInfo.profession || '未知' : '未知';
                 document.getElementById('fightPoint').textContent = userInfo ? userInfo.fightPoint || '未知' : '未知';
                 document.getElementById('maxHp').textContent = skillData.attr ? skillData.attr.max_hp || '未知' : '未知';
                 document.getElementById('skillCount').textContent = Object.keys(skillData.skills).length;
