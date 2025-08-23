@@ -456,6 +456,9 @@ class UserDataManager {
 
         this.hpCache = new Map(); // 这个经常变化的就不存盘了
         this.startTime = Date.now();
+
+        this.logLock = new Lock();
+        this.logDirExist = new Set();
     }
 
     /** 初始化方法 - 异步加载用户缓存 */
@@ -600,23 +603,27 @@ class UserDataManager {
      * */
     async addLog(log) {
         if (isPaused) return;
+
+        const logDir = path.join('./logs', String(this.startTime));
+        const logFile = path.join(logDir, 'fight.log');
+        const timestamp = new Date().toISOString();
+        const logEntry = `[${timestamp}] ${log}\n`;
+
+        await this.logLock.acquire();
         try {
-            const logDir = path.join('./logs', String(this.startTime));
-            const logFile = path.join(logDir, 'fight.log');
-
-            try {
-                await fsPromises.access(logDir);
-            } catch (error) {
-                await fsPromises.mkdir(logDir, { recursive: true });
+            if (!this.logDirExist.has(logDir)) {
+                try {
+                    await fsPromises.access(logDir);
+                } catch (error) {
+                    await fsPromises.mkdir(logDir, { recursive: true });
+                }
+                this.logDirExist.add(logDir);
             }
-
-            const timestamp = new Date().toISOString();
-            const logEntry = `[${timestamp}] ${log}\n`;
-
             await fsPromises.appendFile(logFile, logEntry, 'utf8');
         } catch (error) {
             this.logger.error('Failed to save log:', error);
         }
+        this.logLock.release();
     }
 
     /** 设置用户职业
