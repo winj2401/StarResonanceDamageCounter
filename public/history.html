@@ -105,6 +105,7 @@
             <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">📊 全部数据</button>
             <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">👀 隐藏未参战</button>
             <button class="data-group-button" onclick="openColumnSettings()">⚙️ 表格设置</button>
+            <button class="data-group-button" onclick="downloadFightLog()">📥 下载战斗日志</button>
         </div>
         <div class="table-container" style="max-height: calc(100vh - 140px)">
             <table id="damageTable">
@@ -933,6 +934,10 @@
                         checkbox.checked = columnVisibility[column];
                     }
                 });
+            }
+
+            function downloadFightLog() {
+                window.open(`/api/history/${historyTimeStamp}/download`);
             }
 
             // 打开列设置弹窗

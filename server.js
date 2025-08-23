@@ -1073,6 +1073,13 @@ async function main() {
         }
     });
 
+    // 下载历史战斗日志数据
+    app.get('/api/history/:timestamp/download', async (req, res) => {
+        const { timestamp } = req.params;
+        const historyFilePath = path.join('./logs', timestamp, 'fight.log');
+        res.download(historyFilePath, `fight_${timestamp}.log`);
+    });
+
     // 历史数据列表
     app.get('/api/history/list', async (req, res) => {
         try {
