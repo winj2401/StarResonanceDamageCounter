@@ -1157,3 +1157,10 @@ tr:nth-child(even) {
 .dark-mode #chartToggleBtn svg {
     color: #cbd5e0;
 }
+
+.history-iframe {
+    width: 95vw;
+    height: calc(95vh - 80px);
+    border: none;
+    display: block;
+}

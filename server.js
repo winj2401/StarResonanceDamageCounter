@@ -1011,7 +1011,7 @@ async function main() {
             const userData = JSON.parse(data);
             res.json({
                 code: 0,
-                data: userData,
+                user: userData,
             });
         } catch (error) {
             if (error.code === 'ENOENT') {

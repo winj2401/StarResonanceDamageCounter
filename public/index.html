@@ -14,9 +14,23 @@
         <button class="main-button" onclick="clearData()">🗑️ 清空数据</button>
         <button class="main-button" id="pauseButton" onclick="togglePause()">⏸️ 暂停统计</button>
         <button class="main-button" onclick="openHpWindow()">❤️ 血条监控</button>
+        <button class="main-button" onclick="toggleHistoryModal()">📜 历史数据</button>
         <button class="main-button" onclick="toggleDarkMode()">🌙 夜间模式</button>
         <button class="main-button" onclick="toggleSimpleMode()">📋 简洁模式</button>
         <button class="main-button" onclick="toggleControlsModal()">⚙️ 用户设置</button>
+
+        <!-- 历史数据弹窗 -->
+        <div id="historyModal" class="modal">
+            <div class="modal-content" style="width: 95vw; max-width: 95vw; max-height: 95vh; margin: 1% auto">
+                <div class="modal-header">
+                    <h2 class="modal-title">📜 历史数据</h2>
+                    <span class="close-button" onclick="toggleHistoryModal()">&times;</span>
+                </div>
+                <div class="modal-body" style="padding: 0px">
+                    <iframe id="historyIframe" class="history-iframe"></iframe>
+                </div>
+            </div>
+        </div>
 
         <!-- 控制面板弹窗 -->
         <div id="controlsModal" class="modal">
@@ -2358,6 +2372,21 @@
                     modal.style.display = 'none';
                 } else {
                     modal.style.display = 'block';
+                }
+            }
+
+            // 切换控制面板弹窗显示/隐藏
+            function toggleHistoryModal() {
+                const modal = document.getElementById('historyModal');
+                const iframe = document.getElementById('historyIframe');
+                const isVisible = modal.style.display === 'block';
+
+                if (isVisible) {
+                    modal.style.display = 'none';
+                    iframe.src = '';
+                } else {
+                    modal.style.display = 'block';
+                    iframe.src = 'history.html';
                 }
             }
 
