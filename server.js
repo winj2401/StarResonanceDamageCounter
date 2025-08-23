@@ -717,7 +717,7 @@ class UserDataManager {
         return {
             uid: user.uid,
             name: user.name,
-            profession: user.profession,
+            profession: user.profession + (user.subProfession ? `-${user.subProfession}` : ''),
             skills: user.getSkillSummary(),
             attr: user.attr,
         };
@@ -778,7 +778,7 @@ class UserDataManager {
                 const userData = {
                     uid: user.uid,
                     name: user.name,
-                    profession: user.profession,
+                    profession: user.profession + (user.subProfession ? `-${user.subProfession}` : ''),
                     skills: user.getSkillSummary(),
                     attr: user.attr,
                 };
