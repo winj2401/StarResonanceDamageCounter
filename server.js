@@ -764,6 +764,27 @@ class UserDataManager {
             const timestamp = startTime || this.startTime;
             const logDir = path.join('./logs', String(timestamp));
             const usersDir = path.join(logDir, 'users');
+            const summary = {
+                startTime: timestamp,
+                endTime,
+                duration: endTime - timestamp,
+                userCount: users.size,
+            };
+
+            const allUsersData = {};
+            const userDatas = new Map();
+            for (const [uid, user] of users.entries()) {
+                allUsersData[uid] = user.getSummary();
+
+                const userData = {
+                    uid: user.uid,
+                    name: user.name,
+                    profession: user.profession + (user.subProfession ? `-${user.subProfession}` : ''),
+                    skills: user.getSkillSummary(),
+                    attr: user.attr,
+                };
+                userDatas.set(uid, userData);
+            }
 
             try {
                 await fsPromises.access(usersDir);
@@ -772,49 +793,22 @@ class UserDataManager {
             }
 
             // 保存所有用户数据汇总
-            const allUsersData = {};
-            for (const [uid, user] of users.entries()) {
-                allUsersData[uid] = user.getSummary();
-            }
-
             const allUserDataPath = path.join(logDir, 'allUserData.json');
             await fsPromises.writeFile(allUserDataPath, JSON.stringify(allUsersData, null, 2), 'utf8');
 
             // 保存每个用户的详细数据
-            for (const [uid, user] of users.entries()) {
-                const userData = {
-                    uid: user.uid,
-                    name: user.name,
-                    profession: user.profession + (user.subProfession ? `-${user.subProfession}` : ''),
-                    skills: user.getSkillSummary(),
-                    attr: user.attr,
-                };
-
+            for (const [uid, userData] of userDatas.entries()) {
                 const userDataPath = path.join(usersDir, `${uid}.json`);
                 await fsPromises.writeFile(userDataPath, JSON.stringify(userData, null, 2), 'utf8');
             }
 
-            await fsPromises.writeFile(
-                path.join(logDir, 'summary.json'),
-                JSON.stringify(
-                    {
-                        startTime: timestamp,
-                        endTime,
-                        duration: endTime - timestamp,
-                        userCount: users.size,
-                    },
-                    null,
-                    2,
-                ),
-                'utf8',
-            );
+            await fsPromises.writeFile(path.join(logDir, 'summary.json'), JSON.stringify(summary, null, 2), 'utf8');
 
-            this.logger.info(`Saved data for ${users.size} users to ${logDir}`);
+            this.logger.info(`Saved data for ${summary.userCount} users to ${logDir}`);
         } catch (error) {
             this.logger.error('Failed to save all user data:', error);
             throw error;
         }
-        usersToSave.clear();
     }
 }
 
