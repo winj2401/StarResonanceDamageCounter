@@ -230,6 +230,7 @@
                             <th rowspan="2" title="角色评分">评分</th>
                             <th rowspan="2" title="角色血量">HP</th>
                             <th rowspan="2" title="角色在战斗中受到的伤害">承伤</th>
+                            <th rowspan="2" title="角色在战斗中死亡次数">死亡</th>
                             <th rowspan="2" title="角色在战斗中的暴击伤害次数占总伤害次数的比例">暴击率</th>
                             <th rowspan="2" title="角色在战斗中的幸运伤害次数占总伤害次数的比例">幸运率</th>
                             <th class="damage-main-col" colspan="4">伤害</th>
@@ -1122,6 +1123,7 @@
                         Number(user.fightPoint).toLocaleString(),
                         (user.hp ?? '未知').toLocaleString(),
                         Number(user.taken_damage).toLocaleString(),
+                        user.dead_count ?? '未知',
                         `${(crit_rate * 100).toFixed(2)}%`,
                         `${(lucky_rate * 100).toFixed(2)}%`,
                     ];
@@ -2411,6 +2413,7 @@
                 score: true,
                 hp: true,
                 takenDamage: true,
+                deadCount: true,
                 critRate: true,
                 luckyRate: true,
                 totalDamage: true,
@@ -2485,6 +2488,7 @@
                     { id: 'score', label: '评分', column: 'score' },
                     { id: 'hp', label: 'HP', column: 'hp' },
                     { id: 'takenDamage', label: '承伤', column: 'takenDamage' },
+                    { id: 'deadCount', label: '死亡', column: 'deadCount' },
                     { id: 'critRate', label: '暴击率', column: 'critRate' },
                     { id: 'luckyRate', label: '幸运率', column: 'luckyRate' },
                 ]);
@@ -2596,6 +2600,7 @@
                     { column: 'score', selector: 'th[title="角色评分"]' },
                     { column: 'hp', selector: 'th[title="角色血量"]' },
                     { column: 'takenDamage', selector: 'th[title="角色在战斗中受到的伤害"]' },
+                    { column: 'deadCount', selector: 'th[title="角色在战斗中死亡次数"]' },
                     { column: 'critRate', selector: 'th[title="角色在战斗中的暴击伤害次数占总伤害次数的比例"]' },
                     { column: 'luckyRate', selector: 'th[title="角色在战斗中的幸运伤害次数占总伤害次数的比例"]' },
                 ];
@@ -2719,8 +2724,8 @@
                 rows.forEach((row) => {
                     const cells = row.querySelectorAll('td');
 
-                    // 基础信息列 (0-7)
-                    const baseCols = ['uid', 'nickname', 'job', 'score', 'hp', 'takenDamage', 'critRate', 'luckyRate'];
+                    // 基础信息列 (0-8)
+                    const baseCols = ['uid', 'nickname', 'job', 'score', 'hp', 'takenDamage', 'deadCount', 'critRate', 'luckyRate'];
                     baseCols.forEach((col, index) => {
                         if (cells[index]) {
                             if (columnVisibility[col]) {
@@ -2732,7 +2737,7 @@
                     });
 
                     // 动态列需要根据当前数据组和简洁模式来确定位置
-                    let cellIndex = 8; // 从第9列开始
+                    let cellIndex = 9; // 从第10列开始
 
                     // 处理伤害相关列
                     if (currentDataGroup === 'damage' || currentDataGroup === 'all') {

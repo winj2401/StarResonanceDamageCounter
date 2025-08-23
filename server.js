@@ -256,6 +256,7 @@ class UserData {
         this.damageStats = new StatisticData(this, '伤害');
         this.healingStats = new StatisticData(this, '治疗');
         this.takenDamage = 0; // 承伤
+        this.deadCount = 0; // 死亡次数
         this.profession = '未知';
         this.skillUsage = new Map(); // 技能使用情况
         this.fightPoint = 0; // 总评分
@@ -313,9 +314,11 @@ class UserData {
 
     /** 添加承伤记录
      * @param {number} damage - 承受的伤害值
+     * @param {boolean} isDead - 是否致死伤害
      * */
-    addTakenDamage(damage) {
+    addTakenDamage(damage, isDead) {
         this.takenDamage += damage;
+        if (isDead) this.deadCount++;
     }
 
     /** 更新实时DPS和HPS 计算过去1秒内的总伤害和治疗 */
@@ -362,6 +365,7 @@ class UserData {
             fightPoint: this.fightPoint,
             hp: this.attr.hp,
             max_hp: this.attr.max_hp,
+            dead_count: this.deadCount,
         };
     }
 
@@ -600,11 +604,12 @@ class UserDataManager {
     /** 添加承伤记录
      * @param {number} uid - 承受伤害的用户ID
      * @param {number} damage - 承受的伤害值
+     * @param {boolean} isDead - 是否致死伤害
      * */
-    addTakenDamage(uid, damage) {
+    addTakenDamage(uid, damage, isDead) {
         if (isPaused) return;
         const user = this.getUser(uid);
-        user.addTakenDamage(damage);
+        user.addTakenDamage(damage, isDead);
     }
 
     /** 添加日志记录

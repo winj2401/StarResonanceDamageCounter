@@ -341,7 +341,7 @@ class PacketProcessor {
                     );
                 } else {
                     //玩家受到伤害
-                    this.userDataManager.addTakenDamage(targetUuid.toNumber(), damage.toNumber());
+                    this.userDataManager.addTakenDamage(targetUuid.toNumber(), damage.toNumber(), isDead);
                 }
                 if (isDead) {
                     this.userDataManager.setAttrKV(targetUuid.toNumber(), 'hp', 0);
