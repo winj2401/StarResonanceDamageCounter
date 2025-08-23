@@ -787,6 +787,7 @@ class UserDataManager {
                 endTime,
                 duration: endTime - timestamp,
                 userCount: users.size,
+                version: VERSION,
             };
 
             const allUsersData = {};
