@@ -469,6 +469,12 @@ class UserDataManager {
         this.logLock = new Lock();
         this.logDirExist = new Set();
 
+        this.enemyCache = {
+            name: new Map(),
+            hp: new Map(),
+            maxHp: new Map(),
+        };
+
         // 自动保存
         this.lastAutoSaveTime = 0;
         this.lastLogTime = 0;
@@ -765,6 +771,30 @@ class UserDataManager {
         return result;
     }
 
+    /** 获取所有敌方缓存数据 */
+    getAllEnemiesData() {
+        const result = {};
+        const enemyIds = new Set();
+        enemyIds.add(...this.enemyCache.name.keys());
+        enemyIds.add(...this.enemyCache.hp.keys());
+        enemyIds.add(...this.enemyCache.maxHp.keys());
+        enemyIds.forEach((id) => {
+            result[id] = {
+                name: this.enemyCache.name.get(id),
+                hp: this.enemyCache.hp.get(id),
+                max_hp: this.enemyCache.maxHp.get(id),
+            };
+        });
+        return result;
+    }
+
+    /** 清空敌方缓存 */
+    refreshEnemyCache() {
+        this.enemyCache.name.clear();
+        this.enemyCache.hp.clear();
+        this.enemyCache.maxHp.clear();
+    }
+
     /** 清除所有用户数据 */
     clearAll() {
         const usersToSave = this.users;
@@ -968,6 +998,15 @@ async function main() {
         res.json(data);
     });
 
+    app.get('/api/enemies', (req, res) => {
+        const enemiesData = userDataManager.getAllEnemiesData();
+        const data = {
+            code: 0,
+            enemy: enemiesData,
+        };
+        res.json(data);
+    });
+
     app.get('/api/clear', (req, res) => {
         userDataManager.clearAll();
         logger.info('Statistics have been cleared!');
@@ -1159,6 +1198,7 @@ async function main() {
     }
 
     const clearDataOnServerChange = () => {
+        userDataManager.refreshEnemyCache();
         if (!globalSettings.autoClearOnServerChange || userDataManager.lastLogTime === 0 || userDataManager.users.size === 0) return;
         userDataManager.clearAll();
         logger.info('Server changed, statistics cleared!');

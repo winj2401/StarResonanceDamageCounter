@@ -253,11 +253,6 @@ const streamReadString = (reader) => {
 };
 
 let currentUserUuid = Long.ZERO;
-const enemyCache = {
-    name: new Map(),
-    hp: new Map(),
-    maxHp: new Map(),
-};
 
 class PacketProcessor {
     constructor({ logger, userDataManager }) {
@@ -384,8 +379,8 @@ class PacketProcessor {
                 }
                 infoStr += `#${attackerUuid.toString()}(player)`;
             } else {
-                if (enemyCache.name.has(attackerUuid.toNumber())) {
-                    infoStr += enemyCache.name.get(attackerUuid.toNumber());
+                if (this.userDataManager.enemyCache.name.has(attackerUuid.toNumber())) {
+                    infoStr += this.userDataManager.enemyCache.name.get(attackerUuid.toNumber());
                 }
                 infoStr += `#${attackerUuid.toString()}(enemy)`;
             }
@@ -398,8 +393,8 @@ class PacketProcessor {
                 }
                 targetName += `#${targetUuid.toString()}(player)`;
             } else {
-                if (enemyCache.name.has(targetUuid.toNumber())) {
-                    targetName += enemyCache.name.get(targetUuid.toNumber());
+                if (this.userDataManager.enemyCache.name.has(targetUuid.toNumber())) {
+                    targetName += this.userDataManager.enemyCache.name.get(targetUuid.toNumber());
                 }
                 targetName += `#${targetUuid.toString()}(enemy)`;
             }
@@ -634,7 +629,7 @@ class PacketProcessor {
             switch (attr.Id) {
                 case AttrType.AttrName:
                     const enemyName = reader.string();
-                    enemyCache.name.set(enemyUid, enemyName);
+                    this.userDataManager.enemyCache.name.set(enemyUid, enemyName);
                     this.logger.info(`Found monster name ${enemyName} for id ${enemyUid}`);
                     break;
                 case AttrType.AttrId:
@@ -642,16 +637,16 @@ class PacketProcessor {
                     const name = monsterNames[attrId];
                     if (name) {
                         this.logger.info(`Found moster name ${name} for id ${enemyUid}`);
-                        enemyCache.name.set(enemyUid, name);
+                        this.userDataManager.enemyCache.name.set(enemyUid, name);
                     }
                     break;
                 case AttrType.AttrHp:
                     const enemyHp = reader.int32();
-                    enemyCache.hp.set(enemyUid, enemyHp);
+                    this.userDataManager.enemyCache.hp.set(enemyUid, enemyHp);
                     break;
                 case AttrType.AttrMaxHp:
                     const enemyMaxHp = reader.int32();
-                    enemyCache.maxHp.set(enemyUid, enemyMaxHp);
+                    this.userDataManager.enemyCache.maxHp.set(enemyUid, enemyMaxHp);
                     break;
                 default:
                     // this.logger.debug(`Found unknown attrId ${attr.Id} for E${enemyUid} ${attr.RawData.toString('base64')}`);
