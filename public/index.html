@@ -340,7 +340,7 @@
             let isChartVisible = true;
 
             // 版本检查相关变量
-            const CURRENT_VERSION = '3.0';
+            const CURRENT_VERSION = '3.1';
             const GITHUB_REPO = 'dmlgzs/StarResonanceDamageCounter';
             const UPDATE_CHECK_INTERVAL = 4 * 60 * 60 * 1000;
 
@@ -3010,7 +3010,7 @@
                 // 检查版本更新（延迟3秒执行，避免影响页面加载）
                 setTimeout(() => {
                     checkForUpdates();
-                    setInterval(checkForUpdates, UPDATE_CHECK_INTERVAL);
+                    setInterval(checkForUpdates, 60000);
                 }, 3000);
 
                 // 添加事件委托处理技能按钮点击
