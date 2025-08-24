@@ -774,10 +774,7 @@ class UserDataManager {
     /** 获取所有敌方缓存数据 */
     getAllEnemiesData() {
         const result = {};
-        const enemyIds = new Set();
-        enemyIds.add(...this.enemyCache.name.keys());
-        enemyIds.add(...this.enemyCache.hp.keys());
-        enemyIds.add(...this.enemyCache.maxHp.keys());
+        const enemyIds = new Set([...this.enemyCache.name.keys(), ...this.enemyCache.hp.keys(), ...this.enemyCache.maxHp.keys()]);
         enemyIds.forEach((id) => {
             result[id] = {
                 name: this.enemyCache.name.get(id),
