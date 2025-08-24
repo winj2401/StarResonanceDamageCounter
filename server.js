@@ -24,7 +24,7 @@ const VERSION = '3.0';
 const SETTINGS_PATH = path.join('./settings.json');
 let globalSettings = {
     autoClearOnServerChange: true,
-    autoClearOnTimeout: true,
+    autoClearOnTimeout: false,
 };
 
 const rl = readline.createInterface({

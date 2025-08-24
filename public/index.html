@@ -549,7 +549,7 @@
                         .catch((error) => {
                             console.error('获取设置失败:', error);
                             document.getElementById('settingAutoClearOnServerChange').checked = true;
-                            document.getElementById('settingAutoClearOnTimeout').checked = true;
+                            document.getElementById('settingAutoClearOnTimeout').checked = false;
                         });
                 }
             }
