@@ -66,6 +66,7 @@
                     <form id="settingsForm">
                         <label><input type="checkbox" id="settingAutoClearOnServerChange" /> 切图切线后自动分段数据</label><br />
                         <label><input type="checkbox" id="settingAutoClearOnTimeout" /> 15秒未战斗自动分段数据</label><br />
+                        <label><input type="checkbox" id="settingOnlyRecordEliteDummy" /> 只记录协会精英木桩数据</label><br />
                         <button type="button" onclick="saveSettings()" style="margin-top: 15px">保存设置</button>
                     </form>
                 </div>
@@ -544,12 +545,14 @@
                             if (json.code === 0 && json.data) {
                                 document.getElementById('settingAutoClearOnServerChange').checked = !!json.data.autoClearOnServerChange;
                                 document.getElementById('settingAutoClearOnTimeout').checked = !!json.data.autoClearOnTimeout;
+                                document.getElementById('settingOnlyRecordEliteDummy').checked = !!json.data.onlyRecordEliteDummy;
                             }
                         })
                         .catch((error) => {
                             console.error('获取设置失败:', error);
                             document.getElementById('settingAutoClearOnServerChange').checked = true;
                             document.getElementById('settingAutoClearOnTimeout').checked = false;
+                            document.getElementById('settingOnlyRecordEliteDummy').checked = false;
                         });
                 }
             }
@@ -558,6 +561,7 @@
                 const settings = {
                     autoClearOnServerChange: document.getElementById('settingAutoClearOnServerChange').checked,
                     autoClearOnTimeout: document.getElementById('settingAutoClearOnTimeout').checked,
+                    onlyRecordEliteDummy: document.getElementById('settingOnlyRecordEliteDummy').checked,
                 };
                 fetch('/api/settings', {
                     method: 'POST',

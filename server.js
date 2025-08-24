@@ -25,6 +25,7 @@ const SETTINGS_PATH = path.join('./settings.json');
 let globalSettings = {
     autoClearOnServerChange: true,
     autoClearOnTimeout: false,
+    onlyRecordEliteDummy: false,
 };
 
 const rl = readline.createInterface({
@@ -580,9 +581,11 @@ class UserDataManager {
      * @param {boolean} [isLucky] - 是否为幸运
      * @param {boolean} [isCauseLucky] - 是否造成幸运
      * @param {number} hpLessenValue - 生命值减少量
+     * @param {number} targetUid - 伤害目标ID
      */
-    addDamage(uid, skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue = 0) {
+    addDamage(uid, skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue = 0, targetUid) {
         if (isPaused) return;
+        if (globalSettings.onlyRecordEliteDummy && targetUid !== 75) return;
         this.checkTimeoutClear();
         const user = this.getUser(uid);
         user.addDamage(skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue);

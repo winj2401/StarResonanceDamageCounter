@@ -362,6 +362,7 @@ class PacketProcessor {
                             isLucky,
                             isCauseLucky,
                             hpLessenValue.toNumber(),
+                            targetUuid.toNumber(),
                         );
                     }
                 }
