@@ -476,8 +476,6 @@ class UserDataManager {
             this.lastAutoSaveTime = Date.now();
             this.saveAllUserData();
         }, 10 * 1000);
-
-        this.globalSettings = globalSettings;
     }
 
     /** 初始化方法 - 异步加载用户缓存 */
@@ -840,12 +838,16 @@ class UserDataManager {
     }
 
     checkTimeoutClear() {
-        if (!this.globalSettings.autoClearOnTimeout || this.lastLogTime === 0 || this.users.size === 0) return;
+        if (!globalSettings.autoClearOnTimeout || this.lastLogTime === 0 || this.users.size === 0) return;
         const currentTime = Date.now();
         if (this.lastLogTime && currentTime - this.lastLogTime > 15000) {
             this.clearAll();
             this.logger.info('Timeout reached, statistics cleared!');
         }
+    }
+
+    getGlobalSettings() {
+        return globalSettings;
     }
 }
 
