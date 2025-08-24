@@ -17,7 +17,8 @@
         <button class="main-button" onclick="toggleHistoryModal()">📜 历史数据</button>
         <button class="main-button" onclick="toggleDarkMode()">🌙 夜间模式</button>
         <button class="main-button" onclick="toggleSimpleMode()">📋 简洁模式</button>
-        <button class="main-button" onclick="toggleControlsModal()">⚙️ 用户设置</button>
+        <button class="main-button" onclick="toggleControlsModal()">👤 用户管理</button>
+        <button class="main-button" onclick="toggleSettingsModal()">⚙️ 统计设置</button>
 
         <!-- 历史数据弹窗 -->
         <div id="historyModal" class="modal">
@@ -36,7 +37,7 @@
         <div id="controlsModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title">⚙️ 用户控制面板</h2>
+                    <h2 class="modal-title">👤 用户控制面板</h2>
                     <span class="close-button" onclick="toggleControlsModal()">&times;</span>
                 </div>
                 <div class="modal-body">
@@ -50,6 +51,23 @@
                     >
                         <!-- 用户控制项将在这里动态生成 -->
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置弹窗 -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content" style="width: 400px; max-width: 95vw; margin: 5% auto">
+                <div class="modal-header">
+                    <h2 class="modal-title">⚙️ 统计设置</h2>
+                    <span class="close-button" onclick="toggleSettingsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="settingsForm">
+                        <label><input type="checkbox" id="settingAutoClearOnServerChange" /> 切图切线后自动分段数据</label><br />
+                        <label><input type="checkbox" id="settingAutoClearOnTimeout" /> 5秒未战斗自动分段数据</label><br />
+                        <button type="button" onclick="saveSettings()" style="margin-top: 15px">保存设置</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -515,11 +533,53 @@
                 modal.onclick = null;
             }
 
+            // 设置弹窗相关逻辑
+            function toggleSettingsModal() {
+                const modal = document.getElementById('settingsModal');
+                modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+                if (modal.style.display === 'block') {
+                    fetch('/api/settings')
+                        .then((res) => res.json())
+                        .then((json) => {
+                            if (json.code === 0 && json.data) {
+                                document.getElementById('settingAutoClearOnServerChange').checked = !!json.data.autoClearOnServerChange;
+                                document.getElementById('settingAutoClearOnTimeout').checked = !!json.data.autoClearOnTimeout;
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('获取设置失败:', error);
+                            document.getElementById('settingAutoClearOnServerChange').checked = true;
+                            document.getElementById('settingAutoClearOnTimeout').checked = true;
+                        });
+                }
+            }
+
+            function saveSettings() {
+                const settings = {
+                    autoClearOnServerChange: document.getElementById('settingAutoClearOnServerChange').checked,
+                    autoClearOnTimeout: document.getElementById('settingAutoClearOnTimeout').checked,
+                };
+                fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings),
+                })
+                    .then((res) => res.json())
+                    .then((json) => {
+                        if (json.code === 0) {
+                            toggleSettingsModal();
+                        }
+                    });
+            }
+
             // 点击弹窗外部区域关闭弹窗
             window.onclick = function (event) {
                 const modal = document.getElementById('skillModal');
+                const settingsModal = document.getElementById('settingsModal');
                 if (event.target === modal) {
                     closeSkillModal();
+                } else if (event.target === settingsModal) {
+                    toggleSettingsModal();
                 }
             };
 

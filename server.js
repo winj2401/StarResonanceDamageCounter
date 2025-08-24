@@ -21,6 +21,11 @@ const findDefaultNetworkDevice = require('./algo/netInterfaceUtil');
 
 const skillConfig = require('./tables/skill_names.json').skill_names;
 const VERSION = '3.0';
+const SETTINGS_PATH = path.join('./settings.json');
+let globalSettings = {
+    autoClearOnServerChange: true,
+    autoClearOnTimeout: true,
+};
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -471,6 +476,8 @@ class UserDataManager {
             this.lastAutoSaveTime = Date.now();
             this.saveAllUserData();
         }, 10 * 1000);
+
+        this.globalSettings = globalSettings;
     }
 
     /** 初始化方法 - 异步加载用户缓存 */
@@ -578,6 +585,7 @@ class UserDataManager {
      */
     addDamage(uid, skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue = 0) {
         if (isPaused) return;
+        this.checkTimeoutClear();
         const user = this.getUser(uid);
         user.addDamage(skillId, element, damage, isCrit, isLucky, isCauseLucky, hpLessenValue);
     }
@@ -594,6 +602,7 @@ class UserDataManager {
      */
     addHealing(uid, skillId, element, healing, isCrit, isLucky, isCauseLucky, targetUid) {
         if (isPaused) return;
+        this.checkTimeoutClear();
         if (uid !== 0) {
             const user = this.getUser(uid);
             user.addHealing(skillId, element, healing, isCrit, isLucky, isCauseLucky);
@@ -607,6 +616,7 @@ class UserDataManager {
      * */
     addTakenDamage(uid, damage, isDead) {
         if (isPaused) return;
+        this.checkTimeoutClear();
         const user = this.getUser(uid);
         user.addTakenDamage(damage, isDead);
     }
@@ -826,6 +836,15 @@ class UserDataManager {
         } catch (error) {
             this.logger.error('Failed to save all user data:', error);
             throw error;
+        }
+    }
+
+    checkTimeoutClear() {
+        if (!this.globalSettings.autoClearOnTimeout || this.lastLogTime === 0 || this.users.size === 0) return;
+        const currentTime = Date.now();
+        if (this.lastLogTime && currentTime - this.lastLogTime > 5000) {
+            this.clearAll();
+            this.logger.info('Timeout reached, statistics cleared!');
         }
     }
 }
@@ -1112,6 +1131,35 @@ async function main() {
         }
     });
 
+    // 设置相关接口
+    app.get('/api/settings', async (req, res) => {
+        res.json({ code: 0, data: globalSettings });
+    });
+
+    app.post('/api/settings', async (req, res) => {
+        const newSettings = req.body;
+        globalSettings = { ...globalSettings, ...newSettings };
+        await fsPromises.writeFile(SETTINGS_PATH, JSON.stringify(globalSettings, null, 2), 'utf8');
+        res.json({ code: 0, data: globalSettings });
+    });
+
+    try {
+        await fsPromises.access(SETTINGS_PATH);
+        const data = await fsPromises.readFile(SETTINGS_PATH, 'utf8');
+        globalSettings = { ...globalSettings, ...JSON.parse(data) };
+    } catch (e) {
+        if (e.code !== 'ENOENT') {
+            logger.error('Failed to load settings:', e);
+        }
+    }
+
+    const clearDataOnServerChange = () => {
+        if (globalSettings.autoClearOnServerChange && userDataManager.users.size > 0) {
+            userDataManager.clearAll();
+            logger.info('Server changed, statistics cleared!');
+        }
+    };
+
     // WebSocket 连接处理
     io.on('connection', (socket) => {
         logger.info('WebSocket client connected: ' + socket.id);
@@ -1317,6 +1365,7 @@ async function main() {
                                     current_server = src_server;
                                     clearTcpCache();
                                     tcp_next_seq = tcpPacket.info.seqno + buf.length;
+                                    clearDataOnServerChange();
                                     logger.info('Got Scene Server Address: ' + src_server);
                                 }
                             } catch (e) {}
@@ -1342,6 +1391,7 @@ async function main() {
                             current_server = src_server;
                             clearTcpCache();
                             tcp_next_seq = tcpPacket.info.seqno + buf.length;
+                            clearDataOnServerChange();
                             logger.info('Got Scene Server Address by Login Return Packet: ' + src_server);
                         }
                     }
