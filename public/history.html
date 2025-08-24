@@ -258,14 +258,6 @@
                 }
             }
 
-            // 点击弹窗外部区域关闭弹窗
-            window.onclick = function (event) {
-                const modal = document.getElementById('skillModal');
-                if (event.target === modal) {
-                    closeSkillModal();
-                }
-            };
-
             // 获取技能数据
             async function fetchSkillData(userId) {
                 try {
@@ -896,8 +888,11 @@
             // 点击弹窗外部区域关闭弹窗
             window.onclick = function (event) {
                 const columnModal = document.getElementById('columnSettingsModal');
+                const skillModal = document.getElementById('skillModal');
                 if (event.target === columnModal) {
                     closeColumnSettings();
+                } else if (event.target === skillModal) {
+                    closeSkillModal();
                 }
             };
 

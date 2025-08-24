@@ -572,17 +572,6 @@
                     });
             }
 
-            // 点击弹窗外部区域关闭弹窗
-            window.onclick = function (event) {
-                const modal = document.getElementById('skillModal');
-                const settingsModal = document.getElementById('settingsModal');
-                if (event.target === modal) {
-                    closeSkillModal();
-                } else if (event.target === settingsModal) {
-                    toggleSettingsModal();
-                }
-            };
-
             // 获取技能数据
             async function fetchSkillData(userId) {
                 try {
@@ -2458,10 +2447,16 @@
             window.onclick = function (event) {
                 const controlsModal = document.getElementById('controlsModal');
                 const columnModal = document.getElementById('columnSettingsModal');
+                const skillModal = document.getElementById('skillModal');
+                const settingsModal = document.getElementById('settingsModal');
                 if (event.target === controlsModal) {
                     toggleControlsModal();
                 } else if (event.target === columnModal) {
                     closeColumnSettings();
+                } else if (event.target === skillModal) {
+                    closeSkillModal();
+                } else if (event.target === settingsModal) {
+                    toggleSettingsModal();
                 }
             };
 
