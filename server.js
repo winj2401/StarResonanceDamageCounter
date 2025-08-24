@@ -1156,10 +1156,9 @@ async function main() {
     }
 
     const clearDataOnServerChange = () => {
-        if (globalSettings.autoClearOnServerChange && userDataManager.users.size > 0) {
-            userDataManager.clearAll();
-            logger.info('Server changed, statistics cleared!');
-        }
+        if (!globalSettings.autoClearOnServerChange || userDataManager.lastLogTime === 0 || userDataManager.users.size === 0) return;
+        userDataManager.clearAll();
+        logger.info('Server changed, statistics cleared!');
     };
 
     // WebSocket 连接处理
