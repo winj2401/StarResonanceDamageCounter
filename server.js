@@ -48,52 +48,52 @@ function ask(question) {
 function getSubProfessionBySkillId(skillId) {
     switch (skillId) {
         case 1241:
-            return '射线';
+            return 'Frostray';
         case 2307:
         case 2361:
         case 55302:
-            return '协奏';
+            return 'Concerto';
         case 20301:
-            return '愈合';
+            return 'Healing';
         case 1518:
         case 1541:
         case 21402:
-            return '惩戒';
+            return 'Thornlash';
         case 2306:
-            return '狂音';
+            return 'Dissonance';
         case 120901:
         case 120902:
-            return '冰矛';
+            return 'Frostlance';
         case 1714:
         case 1734:
-            return '居合';
+            return 'Iaido';
         case 44701:
         case 179906:
-            return '月刃';
+            return 'Moonblade';
         case 220112:
         case 2203622:
-            return '鹰弓';
+            return 'Falconry';
         case 2292:
         case 1700820:
         case 1700825:
         case 1700827:
-            return '狼弓';
+            return 'Beastmaster';
         case 1419:
-            return '空枪';
+            return 'Aerial Style';
         case 1405:
         case 1418:
-            return '重装';
+            return 'Overdrive';
         case 2405:
-            return '防盾';
+            return 'Bulwark';
         case 2406:
-            return '光盾';
+            return 'Radiant Guard';
         case 199902:
-            return '岩盾';
+            return 'Stonewall';
         case 1930:
         case 1931:
         case 1934:
         case 1935:
-            return '格挡';
+            return 'Block';
         default:
             return '';
     }
@@ -258,14 +258,14 @@ class UserData {
     constructor(uid) {
         this.uid = uid;
         this.name = '';
-        this.damageStats = new StatisticData(this, '伤害');
-        this.healingStats = new StatisticData(this, '治疗');
+        this.damageStats = new StatisticData(this, 'DMG');
+        this.healingStats = new StatisticData(this, 'Heal');
         this.takenDamage = 0; // 承伤
         this.deadCount = 0; // 死亡次数
-        this.profession = '未知';
+        this.profession = '❓';
         this.skillUsage = new Map(); // 技能使用情况
         this.fightPoint = 0; // 总评分
-        this.subProfession = '';
+        this.subProfession = '❓';
         this.attr = {};
     }
 
@@ -282,7 +282,7 @@ class UserData {
         this.damageStats.addRecord(damage, isCrit, isLucky, hpLessenValue);
         // 记录技能使用情况
         if (!this.skillUsage.has(skillId)) {
-            this.skillUsage.set(skillId, new StatisticData(this, '伤害', element));
+            this.skillUsage.set(skillId, new StatisticData(this, 'DMG', element));
         }
         this.skillUsage.get(skillId).addRecord(damage, isCrit, isCauseLucky, hpLessenValue);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
@@ -306,7 +306,7 @@ class UserData {
         // 记录技能使用情况
         skillId = skillId + 1000000000;
         if (!this.skillUsage.has(skillId)) {
-            this.skillUsage.set(skillId, new StatisticData(this, '治疗', element));
+            this.skillUsage.set(skillId, new StatisticData(this, 'Heal', element));
         }
         this.skillUsage.get(skillId).addRecord(healing, isCrit, isCauseLucky);
         this.skillUsage.get(skillId).realtimeWindow.length = 0;
@@ -891,8 +891,8 @@ async function main() {
 
     // 从命令行参数获取设备号和日志级别
     const args = process.argv.slice(2);
-    let num = args[0];
-    let log_level = args[1];
+    let num = args[0] ? args[0] : 'auto';
+    let log_level = args[1] ? args[1] : 'info';
 
     if (num === 'auto') {
         print('Auto detecting default network interface...');

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en-US">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>血条监控 - 星痕共鸣</title>
+        <title>Health Bar Monitoring - BP:SR</title>
         <script src="./socket.io.min.js"></script>
         <style>
             * {
@@ -492,16 +492,16 @@
         <div class="container">
             <div class="header">
                 <div class="header-left">
-                    <div class="title">🩸 血条监控</div>
-                    <div class="subtitle" id="playerCount">等待数据连接...</div>
+                    <div class="title">🩸 Health Bar Monitoring</div>
+                    <div class="subtitle" id="playerCount">Waiting for connection...</div>
                 </div>
 
                 <div class="header-center">
                     <div class="controls">
-                        <button class="btn active" id="sortHpBtn" onclick="setSortMode('hp')">💚 按血量</button>
-                        <button class="btn" id="sortNameBtn" onclick="setSortMode('name')">🏷️ 按姓名</button>
-                        <button class="btn" id="sortDpsBtn" onclick="setSortMode('dps')">⚔️ 按DPS</button>
-                        <button class="btn" id="sortHpsBtn" onclick="setSortMode('hps')">🩹 按HPS</button>
+                        <button class="btn active" id="sortHpBtn" onclick="setSortMode('hp')">💚 Sort by HP</button>
+                        <button class="btn" id="sortNameBtn" onclick="setSortMode('name')">🏷️ Sort by Name</button>
+                        <button class="btn" id="sortDpsBtn" onclick="setSortMode('dps')">⚔️ Sort by DPS</button>
+                        <button class="btn" id="sortHpsBtn" onclick="setSortMode('hps')">🩹 Sort by HPS</button>
                     </div>
                 </div>
 
@@ -512,7 +512,7 @@
 
             <div class="hp-grid" id="playerGrid">
                 <div class="no-data">
-                    <div>🔄 正在连接服务器...</div>
+                    <div>🔄 Connecting to server...</div>
                 </div>
             </div>
         </div>
@@ -530,17 +530,17 @@
 
             // 职业映射
             const professionMap = {
-                雷影剑士: { type: 'damage', color: '#e74c3c', short_name: '太刀' },
-                冰魔导师: { type: 'damage', color: '#e74c3c', short_name: '冰法' },
-                青岚骑士: { type: 'damage', color: '#e74c3c', short_name: '长枪' },
-                神射手: { type: 'damage', color: '#e74c3c', short_name: '弓箭' },
+                Stormblade: { type: 'damage', color: '#e74c3c', short_name: '⚡' },
+                'Frost Mage': { type: 'damage', color: '#e74c3c', short_name: '❄️' },
+                'Wind Knight': { type: 'damage', color: '#e74c3c', short_name: '💨' },
+                Marksman: { type: 'damage', color: '#e74c3c', short_name: '🏹' },
                 '涤罪恶火·战斧': { type: 'damage', color: '#e74c3c', short_name: '战斧' },
                 '雷霆一闪·手炮': { type: 'damage', color: '#e74c3c', short_name: '手炮' },
                 '暗灵祈舞·仪刀/仪仗': { type: 'damage', color: '#e74c3c', short_name: '仪刀' },
-                森语者: { type: 'heal', color: '#27ae60', short_name: '森语' },
-                灵魂乐手: { type: 'heal', color: '#27ae60', short_name: '吉他' },
-                巨刃守护者: { type: 'tank', color: '#2980b9', short_name: '巨刃' },
-                神盾骑士: { type: 'tank', color: '#2980b9', short_name: '剑盾' },
+                'Verdant Oracle': { type: 'heal', color: '#27ae60', short_name: '🌿' },
+                'Soul Musician': { type: 'heal', color: '#27ae60', short_name: '🎵' },
+                'Heavy Guardian': { type: 'tank', color: '#2980b9', short_name: '⛰️' },
+                'Shield Knight': { type: 'tank', color: '#2980b9', short_name: '⚔️' },
             };
 
             // 初始化连接
@@ -638,13 +638,13 @@
                         statusElement.textContent = '🟢 WebSocket';
                         break;
                     case 'api':
-                        statusElement.textContent = '🟡 轮询模式';
+                        statusElement.textContent = '🟡 Polling Mode';
                         break;
                     case 'disconnected':
-                        statusElement.textContent = '🔴 连接断开';
+                        statusElement.textContent = '🔴 Disconnected';
                         break;
                     default:
-                        statusElement.textContent = '🔄 连接中';
+                        statusElement.textContent = '🔄 Connecting';
                 }
             }
 
@@ -655,7 +655,7 @@
                 const totalDps = user.total_dps || 0;
                 const totalHps = user.total_hps || 0;
 
-                // 检查暴击率和幸运率是否为NaN
+                // 检查Crit Rate和幸运率是否为NaN
                 const critRate = user.total_count?.critical / user.total_count?.total;
                 const luckyRate = user.total_count?.lucky / user.total_count?.total;
 
@@ -713,7 +713,7 @@
             function updatePlayerCount() {
                 const playerCountElement = document.getElementById('playerCount');
                 const count = currentPlayers.length;
-                playerCountElement.textContent = `监控中: ${count}/20 名玩家`;
+                playerCountElement.textContent = `Count: ${count}/20 Players`;
             }
 
             // 渲染玩家卡片
@@ -800,7 +800,8 @@
                 // 添加无数据提示元素
                 const noDataElement = document.createElement('div');
                 noDataElement.className = 'no-data';
-                noDataElement.innerHTML = '<div>📭 暂无参战玩家血条数据<br>🗺️ 切线或切图可重新获取血条数据</div>';
+                noDataElement.innerHTML =
+                    '<div>📭 No health bar data for participating players.<br>🗺️ You can retrieve health bar data by changing Line or moving between maps.</div>';
                 noDataElement.style.display = 'block';
                 grid.appendChild(noDataElement);
             }
@@ -817,23 +818,23 @@
                 div.innerHTML = `
                     <div class="player-info">
                         <div class="player-basic">
-                            <div class="player-name" title="">等待数据...</div>
+                            <div class="player-name" title="">Waiting for data...</div>
                             <div class="player-profession">-</div>
                         </div>
                         <div class="player-stats">
-                            <div class="stat-item" title="总DPS">
+                            <div class="stat-item" title="Total DPS">
                                 <span class="stat-icon">⚔️</span>
                                 <span class="stat-value">0</span>
                             </div>
-                            <div class="stat-item" title="总HPS">
+                            <div class="stat-item" title="Total HPS">
                                 <span class="stat-icon">🩹</span>
                                 <span class="stat-value">0</span>
                             </div>
-                            <div class="stat-item" title="总伤害">
+                            <div class="stat-item" title="Total 伤害">
                                 <span class="stat-icon">💥</span>
                                 <span class="stat-value">0</span>
                             </div>
-                            <div class="stat-item" title="总治疗">
+                            <div class="stat-item" title="Total Healing">
                                 <span class="stat-icon">❤️</span>
                                 <span class="stat-value">0</span>
                             </div>
@@ -860,13 +861,13 @@
                 const maxHp = player.max_hp || 1;
                 const hpPercent = Math.max(0, Math.min(100, (hp / maxHp) * 100));
                 const name = player.name || `UID:${player.id}`;
-                const profession = player.profession || '未知';
+                const profession = player.profession || '❓';
 
                 // 获取职业信息
                 const professionParts = profession.split('-');
                 const mainProfession = professionParts[0];
                 const subProfession = professionParts[1] || '';
-                const professionInfo = professionMap[mainProfession] || { type: '未知', color: '#9E9E9E' };
+                const professionInfo = professionMap[mainProfession] || { type: '❓', color: '#9E9E9E' };
 
                 // 确定血量状态
                 let hpClass = '';
@@ -891,7 +892,7 @@
                 playerNameEl.textContent = name;
                 playerNameEl.title = name;
 
-                playerProfessionEl.textContent = subProfession || professionInfo.short_name || '未知';
+                playerProfessionEl.textContent = subProfession ? `${professionInfo.short_name}-${subProfession}` : mainProfession || '❓';
                 playerProfessionEl.style.backgroundColor = professionInfo.color;
 
                 hpCurrentEl.textContent = hp;

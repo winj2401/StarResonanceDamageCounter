@@ -1,30 +1,30 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en-US">
     <head>
         <meta charset="UTF-8" />
-        <title>星痕共鸣实时战斗数据</title>
+        <title>BP:SR DPS Meter</title>
         <script src="echarts.min.js"></script>
         <script src="socket.io.min.js"></script>
         <link rel="stylesheet" type="text/css" href="css/style.css" />
     </head>
 
     <body>
-        <h1 id="appTitle">🎯 星痕共鸣实时战斗数据展示</h1>
+        <h1 id="appTitle">🎯 BP:Star Resonance DPS Meter</h1>
         <div style="margin: 20px 0"></div>
-        <button class="main-button" onclick="clearData()">🗑️ 清空数据</button>
-        <button class="main-button" id="pauseButton" onclick="togglePause()">⏸️ 暂停统计</button>
-        <button class="main-button" onclick="openHpWindow()">❤️ 血条监控</button>
-        <button class="main-button" onclick="toggleHistoryModal()">📜 历史数据</button>
-        <button class="main-button" onclick="toggleDarkMode()">🌙 夜间模式</button>
-        <button class="main-button" onclick="toggleSimpleMode()">📋 简洁模式</button>
-        <button class="main-button" onclick="toggleControlsModal()">👤 用户管理</button>
-        <button class="main-button" onclick="toggleSettingsModal()">⚙️ 统计设置</button>
+        <button class="main-button" onclick="clearData()">🗑️ Clear Data</button>
+        <button class="main-button" id="pauseButton" onclick="togglePause()">⏸️ Pause</button>
+        <button class="main-button" onclick="openHpWindow()">❤️ Monitor HP</button>
+        <button class="main-button" onclick="toggleHistoryModal()">📜 Past Encounters</button>
+        <button class="main-button" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+        <button class="main-button" onclick="toggleSimpleMode()">📋 Simple Mode</button>
+        <button class="main-button" onclick="toggleControlsModal()">👤 Manage Players</button>
+        <button class="main-button" onclick="toggleSettingsModal()">⚙️ Settings</button>
 
         <!-- 历史数据弹窗 -->
         <div id="historyModal" class="modal">
             <div class="modal-content" style="width: 95vw; max-width: 95vw; max-height: 95vh; margin: 1% auto">
                 <div class="modal-header">
-                    <h2 class="modal-title">📜 历史数据</h2>
+                    <h2 class="modal-title">📜 Past Encounters</h2>
                     <span class="close-button" onclick="toggleHistoryModal()">&times;</span>
                 </div>
                 <div class="modal-body" style="padding: 0px">
@@ -37,13 +37,13 @@
         <div id="controlsModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title">👤 用户控制面板</h2>
+                    <h2 class="modal-title">👤 Player Management</h2>
                     <span class="close-button" onclick="toggleControlsModal()">&times;</span>
                 </div>
                 <div class="modal-body">
                     <div style="margin-bottom: 15px; text-align: center">
-                        <button onclick="toggleAllUsers()">🔄 全选/取消全选</button>
-                        <button onclick="clearNicknames()">🗑️ 清空所有昵称</button>
+                        <button onclick="toggleAllUsers()">🔄 Select/Deselect All</button>
+                        <button onclick="clearNicknames()">🗑️ Clear all players</button>
                     </div>
                     <div
                         id="userControlsList"
@@ -59,15 +59,15 @@
         <div id="settingsModal" class="modal">
             <div class="modal-content" style="width: 400px; max-width: 95vw; margin: 5% auto">
                 <div class="modal-header">
-                    <h2 class="modal-title">⚙️ 统计设置</h2>
+                    <h2 class="modal-title">⚙️ Settings</h2>
                     <span class="close-button" onclick="toggleSettingsModal()">&times;</span>
                 </div>
                 <div class="modal-body">
                     <form id="settingsForm">
-                        <label><input type="checkbox" id="settingAutoClearOnServerChange" /> 切图切线后自动分段数据</label><br />
-                        <label><input type="checkbox" id="settingAutoClearOnTimeout" /> 15秒未战斗自动分段数据</label><br />
-                        <label><input type="checkbox" id="settingOnlyRecordEliteDummy" /> 只记录协会精英木桩数据</label><br />
-                        <button type="button" onclick="saveSettings()" style="margin-top: 15px">保存设置</button>
+                        <label><input type="checkbox" id="settingAutoClearOnServerChange" /> Auto clear on Server Change</label><br />
+                        <label><input type="checkbox" id="settingAutoClearOnTimeout" /> Auto clear after 15s Out of Combat</label><br />
+                        <label><input type="checkbox" id="settingOnlyRecordEliteDummy" /> Only Record Elite mobs</label><br />
+                        <button type="button" onclick="saveSettings()" style="margin-top: 15px">Save Settings</button>
                     </form>
                 </div>
             </div>
@@ -79,34 +79,34 @@
                 <div class="skill-modal-header">
                     <h2 class="skill-modal-title">
                         <i class="icon">📊</i>
-                        <span id="skillUserName">技能参与统计</span>
+                        <span id="skillUserName">Skill Breakdown</span>
                     </h2>
                     <span class="skill-modal-close" onclick="closeSkillModal()">&times;</span>
                 </div>
                 <div class="skill-modal-body">
                     <div class="skill-user-info">
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">用户ID</div>
+                            <div class="skill-user-info-label">Player ID</div>
                             <div class="skill-user-info-value" id="skillUserId">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">角色昵称</div>
+                            <div class="skill-user-info-label">Player Name</div>
                             <div class="skill-user-info-value" id="skillUserNickname">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">职业</div>
+                            <div class="skill-user-info-label">Class</div>
                             <div class="skill-user-info-value" id="skillUserProfession">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">战力评分</div>
+                            <div class="skill-user-info-label">Ability Score</div>
                             <div class="skill-user-info-value" id="fightPoint">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">最大HP</div>
+                            <div class="skill-user-info-label">Max HP</div>
                             <div class="skill-user-info-value" id="maxHp">-</div>
                         </div>
                         <div class="skill-user-info-item">
-                            <div class="skill-user-info-label">技能数量</div>
+                            <div class="skill-user-info-label">Skill Count</div>
                             <div class="skill-user-info-value" id="skillCount">-</div>
                         </div>
                     </div>
@@ -120,15 +120,15 @@
                         <table class="skill-table" id="skillTable">
                             <thead>
                                 <tr>
-                                    <th>技能名称</th>
-                                    <th>类型</th>
-                                    <th>元素</th>
-                                    <th>总数值</th>
-                                    <th>使用次数</th>
-                                    <th>暴击率</th>
-                                    <th>幸运触发率</th>
-                                    <th>暴击数值</th>
-                                    <th>普通数值</th>
+                                    <th>Skill Name</th>
+                                    <th>Skill Type</th>
+                                    <th>Element</th>
+                                    <th>Total DMG</th>
+                                    <th>Uses</th>
+                                    <th>Crit Rate</th>
+                                    <th>Lucky Rate</th>
+                                    <th>Crit DMG</th>
+                                    <th>Normal DMG</th>
                                 </tr>
                             </thead>
                             <tbody id="skillTableBody"></tbody>
@@ -142,26 +142,26 @@
         <div id="updateModal" class="update-modal">
             <div class="update-modal-content">
                 <div class="update-modal-header">
-                    <h2 class="update-modal-title">🚀 发现新版本</h2>
+                    <h2 class="update-modal-title">🚀 New Version Found</h2>
                     <button class="update-modal-close" onclick="closeUpdateModal()">&times;</button>
                 </div>
                 <div class="update-modal-body">
-                    <p>检测到有新版本可用，建议及时更新以获得最佳使用体验！</p>
+                    <p>A new version is detected and we recommend to update for the best experience!</p>
 
                     <div class="version-info">
                         <div class="current-version">
-                            <span>当前版本</span>
+                            <span>Current Version</span>
                             <span id="currentVersionText">---</span>
                         </div>
                         <div class="latest-version">
-                            <span>最新版本</span>
+                            <span>Latest Version</span>
                             <span id="latestVersionText">---</span>
                         </div>
                     </div>
 
                     <div class="update-buttons">
-                        <a id="downloadLink" href="#" target="_blank" class="update-btn update-btn-primary"> 📥 前往下载 </a>
-                        <button onclick="closeUpdateModal()" class="update-btn update-btn-secondary">⏭️ 稍后提醒</button>
+                        <a id="downloadLink" href="#" target="_blank" class="update-btn update-btn-primary"> 📥 Download </a>
+                        <button onclick="closeUpdateModal()" class="update-btn update-btn-secondary">⏭️ Remind me later</button>
                     </div>
                 </div>
             </div>
@@ -169,13 +169,13 @@
 
         <!-- 服务器状态提示 -->
         <div id="serverStatus" class="server-status">
-            <span id="serverStatusText">连接中...</span>
+            <span id="serverStatusText">Connecting...</span>
         </div>
 
         <!-- DPS折线图 -->
         <div class="chart-container">
             <h3 style="margin-top: 0; display: flex; justify-content: space-between; align-items: center">
-                📈 DPS趋势
+                📈 DPS Chart
                 <div style="display: flex; align-items: center; gap: 10px">
                     <span id="chartStatus" style="font-size: 12px; color: #666; font-weight: normal"></span>
                     <button
@@ -213,68 +213,72 @@
 
         <div class="card">
             <div style="margin: 20px 0">
-                <label for="sortSelect" style="margin-right: 10px; font-weight: bold">排序方式:</label>
+                <label for="sortSelect" style="margin-right: 10px; font-weight: bold">Sort By:</label>
                 <select
                     id="sortSelect"
                     onchange="updateSortMode()"
                     style="padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ddd; background-color: white"
                 >
-                    <option value="uid">按UID排序 (升序)</option>
-                    <option value="fightPoint">按评分排序 (降序)</option>
-                    <option value="takenDamage">按承伤排序 (降序)</option>
-                    <option value="damage">按总伤害排序 (降序)</option>
-                    <option value="dps">按总DPS排序 (降序)</option>
-                    <option value="realtimeDpsMax">按最大瞬时DPS排序 (降序)</option>
-                    <option value="healing">按总治疗排序 (降序)</option>
-                    <option value="hps">按总HPS排序 (降序)</option>
-                    <option value="realtimeHpsMax">按最大瞬时HPS排序 (降序)</option>
-                    <option value="hp_min">按剩余HP排序 (升序)</option>
+                    <option value="uid">Sort by UID (Ascending)</option>
+                    <option value="fightPoint">Sort by Ability Score (Descending)</option>
+                    <option value="takenDamage">Sort by Damage Taken (Descending)</option>
+                    <option value="damage">Sort by Total DMG (Descending)</option>
+                    <option value="dps">Sort by Total DPS (Descending)</option>
+                    <option value="realtimeDpsMax">Sort by Max Instant DPS (Descending)</option>
+                    <option value="healing">Sort by Total Healing (Descending)</option>
+                    <option value="hps">Sort by Total HPS (Descending)</option>
+                    <option value="realtimeHpsMax">Sort by Max Instant HPS (Descending)</option>
+                    <option value="hp_min">Sort by HP left (Ascending)</option>
                 </select>
             </div>
             <!-- 数据组显示控制 -->
             <div class="data-group-controls">
-                <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">⚔️ 伤害&DPS</button>
-                <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">❤️ 治疗&HPS</button>
-                <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">📊 全部数据</button>
-                <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">👀 隐藏未参战</button>
-                <button class="data-group-button" onclick="openColumnSettings()">⚙️ 表格设置</button>
+                <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">⚔️ Damage & DPS</button>
+                <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">❤️ Healing & HPS</button>
+                <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">📊 All Data</button>
+                <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">👀 Hide Inactive</button>
+                <button class="data-group-button" onclick="openColumnSettings()">⚙️ Table Settings</button>
             </div>
             <div class="table-container">
                 <table id="damageTable">
                     <thead>
                         <tr>
-                            <th rowspan="2" title="角色唯一标识符">角色ID</th>
-                            <th rowspan="2" title="角色昵称/自定义昵称">角色昵称</th>
-                            <th rowspan="2" title="角色职业">职业</th>
-                            <th rowspan="2" title="角色评分">评分</th>
+                            <th rowspan="2" title="角色唯一标识符">Player ID</th>
+                            <th rowspan="2" title="角色昵称/自定义昵称">Player Nickname</th>
+                            <th rowspan="2" title="角色职业">Class</th>
+                            <th rowspan="2" title="角色评分">Ability Score</th>
                             <th rowspan="2" title="角色血量">HP</th>
-                            <th rowspan="2" title="角色在战斗中受到的伤害">承伤</th>
-                            <th rowspan="2" title="角色在战斗中死亡次数">死亡</th>
-                            <th rowspan="2" title="角色在战斗中的暴击伤害次数占总伤害次数的比例">暴击率</th>
-                            <th rowspan="2" title="角色在战斗中的幸运伤害次数占总伤害次数的比例">幸运率</th>
-                            <th class="damage-main-col" colspan="4">伤害</th>
-                            <th class="damage-simple-col" style="display: none" colspan="1">伤害</th>
+                            <th rowspan="2" title="角色在战斗中受到的伤害">Damage Taken</th>
+                            <th rowspan="2" title="角色在战斗中死亡次数">Deaths</th>
+                            <th rowspan="2" title="角色在战斗中的暴击伤害次数占总伤害次数的比例">Crit Rate</th>
+                            <th rowspan="2" title="角色在战斗中的幸运伤害次数占总伤害次数的比例">Lucky Hit Rate</th>
+                            <th class="damage-main-col" colspan="4">DMG</th>
+                            <th class="damage-simple-col" style="display: none" colspan="1">DMG</th>
                             <th class="dps-col" colspan="3">DPS</th>
-                            <th class="healing-main-col" colspan="4">治疗</th>
-                            <th class="healing-simple-col" style="display: none" colspan="1">治疗</th>
+                            <th class="healing-main-col" colspan="4">Healing</th>
+                            <th class="healing-simple-col" style="display: none" colspan="1">Healing</th>
                             <th class="hps-col" colspan="3">HPS</th>
-                            <th rowspan="2">操作</th>
+                            <th rowspan="2">Actions</th>
                         </tr>
                         <tr>
-                            <th class="damage-cols" title="角色在战斗中造成的总伤害">总伤害</th>
-                            <th class="damage-detail-cols" title="角色在战斗中造成的非幸运的暴击伤害">纯暴击</th>
-                            <th class="damage-detail-cols" title="角色在战斗中造成的非暴击的幸运伤害">纯幸运</th>
-                            <th class="damage-detail-cols" title="角色在战斗中造成的暴击的幸运伤害">暴击幸运</th>
-                            <th class="dps-cols" title="角色在战斗中的最近一秒造成的伤害">瞬时DPS</th>
-                            <th class="dps-cols" title="角色在战斗中的最大瞬时DPS">最大瞬时</th>
-                            <th class="dps-cols" title="角色在战斗中的总DPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">总DPS</th>
-                            <th class="healing-cols" title="角色在战斗中造成的总治疗量">总治疗</th>
-                            <th class="healing-detail-cols" title="角色在战斗中造成的非幸运的暴击治疗量">纯暴击</th>
-                            <th class="healing-detail-cols" title="角色在战斗中造成的非暴击的幸运治疗量">纯幸运</th>
-                            <th class="healing-detail-cols" title="角色在战斗中造成的暴击的幸运治疗量">暴击幸运</th>
-                            <th class="hps-cols" title="角色在战斗中的最近一秒造成的伤害和治疗量">瞬时HPS</th>
-                            <th class="hps-cols" title="角色在战斗中的最大瞬时HPS">最大瞬时</th>
-                            <th class="hps-cols" title="角色在战斗中的总HPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">总HPS</th>
+                            <th class="damage-cols" title="角色在战斗中造成的总伤害">Total Damage</th>
+                            <th class="damage-detail-cols" title="角色在战斗中造成的非幸运的暴击伤害">Pure Crit</th>
+                            <th class="damage-detail-cols" title="角色在战斗中造成的非暴击的幸运伤害">Pure Lucky</th>
+                            <th class="damage-detail-cols" title="角色在战斗中造成的暴击的幸运伤害">Crit & Lucky</th>
+                            <th class="dps-cols" title="角色在战斗中的最近一秒造成的伤害">Instant DPS</th>
+                            <th class="dps-cols" title="角色在战斗中的最大瞬时DPS">Max Instant</th>
+                            <th class="dps-cols" title="角色在战斗中的总DPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">
+                                Total DPS
+                            </th>
+                            <th class="healing-cols" title="角色在战斗中造成的总治疗量">Total Healing</th>
+                            <th class="healing-detail-cols" title="角色在战斗中造成的非幸运的暴击治疗量">Pure Crit</th>
+                            <th class="healing-detail-cols" title="角色在战斗中造成的非暴击的幸运治疗量">Pure Lucky</th>
+                            <th class="healing-detail-cols" title="角色在战斗中造成的暴击的幸运治疗量">Crit & Lucky</th>
+                            <th class="hps-cols" title="角色在战斗中的最近一秒造成的伤害和治疗量">Instant HPS</th>
+                            <th class="hps-cols" title="角色在战斗中的最大瞬时HPS">Max Instant</th>
+                            <th class="hps-cols" title="角色在战斗中的总HPS（以第一次技能与最后一次技能之间的时间作为有效战斗时间计算）">
+                                Total HPS
+                            </th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -340,8 +344,8 @@
             let isChartVisible = true;
 
             // 版本检查相关变量
-            const CURRENT_VERSION = '3.1';
-            const GITHUB_REPO = 'dmlgzs/StarResonanceDamageCounter';
+            const CURRENT_VERSION = '3.1-english';
+            const GITHUB_REPO = 'winj2401/StarResonanceDamageCounter';
             const UPDATE_CHECK_INTERVAL = 4 * 60 * 60 * 1000;
 
             // 从series数据中提取可见最大值
@@ -422,7 +426,7 @@
                 box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                 animation: slideIn 0.3s ease-out;
             `;
-                toast.textContent = '✅ 已复制用户数据';
+                toast.textContent = '✅ User data copied';
                 document.body.appendChild(toast);
 
                 // 3秒后移除提示
@@ -598,11 +602,11 @@
 
                 // 更新用户信息
                 document.getElementById('skillUserId').textContent = skillData.uid;
-                document.getElementById('skillUserName').textContent = `${skillData.name || `UID:${skillData.uid}`} - 技能分析`;
+                document.getElementById('skillUserName').textContent = `${skillData.name || `UID:${skillData.uid}`} - Skill Breakdown`;
                 document.getElementById('skillUserNickname').textContent = skillData.name;
-                document.getElementById('skillUserProfession').textContent = userInfo ? userInfo.profession || '未知' : '未知';
-                document.getElementById('fightPoint').textContent = userInfo ? userInfo.fightPoint || '未知' : '未知';
-                document.getElementById('maxHp').textContent = skillData.attr ? skillData.attr.max_hp || '未知' : '未知';
+                document.getElementById('skillUserProfession').textContent = userInfo ? userInfo.profession || '❓' : '❓';
+                document.getElementById('fightPoint').textContent = userInfo ? userInfo.fightPoint || '❓' : '❓';
+                document.getElementById('maxHp').textContent = skillData.attr ? skillData.attr.max_hp || '❓' : '❓';
                 document.getElementById('skillCount').textContent = Object.keys(skillData.skills).length;
 
                 // 把对象转数组并排序
@@ -656,35 +660,58 @@
                 const allDamages = damages.reduce((a, b) => a + b, 0);
                 const otherDamages = allDamages - topAllDamages;
 
+                // Ensure containers stack vertically
+                const statsContainer = document.querySelector('.skill-stats-container');
+                if (statsContainer) {
+                    statsContainer.style.display = 'flex';
+                    statsContainer.style.flexDirection = 'column'; // stack on top of each other
+                    statsContainer.style.gap = '12px';
+                    statsContainer.style.alignItems = 'stretch';
+                }
+
+                // Ensure each chart container takes full width and a reasonable height
+                const dmgEl = document.getElementById('skillDamageChart');
+                const critEl = document.getElementById('skillCritChart');
+                if (dmgEl) {
+                    dmgEl.style.width = '100%';
+                    dmgEl.style.height = '260px';
+                }
+                if (critEl) {
+                    critEl.style.width = '100%';
+                    critEl.style.height = '500px';
+                }
+
                 // 构造前 5 的 data，并且都显示标签
                 const pieData = topNames.map((name, idx) => ({
                     value: topDamages[idx],
                     name: name,
                     label: {
-                        show: true, // 打开这一项的标签
-                        position: 'outside', // 放到扇区外侧
-                        formatter: '{b}\n{d}%', // 显示“名称 + 百分比”
+                        show: true,
+                        position: 'outside',
+                        formatter: '{b}\n{d}%',
                     },
-                    labelLine: {
-                        show: true, // 显示引导线
-                    },
+                    labelLine: { show: true },
                 }));
                 pieData.push({
                     value: otherDamages,
-                    name: '其他',
-                    label: {
-                        show: true, // 打开这一项的标签
-                        position: 'outside', // 放到扇区外侧
-                        formatter: '{b}\n{d}%', // 显示“名称 + 百分比”
-                    },
-                    labelLine: {
-                        show: true, // 显示引导线
-                    },
+                    name: 'Other',
+                    label: { show: true, position: 'outside', formatter: '{b}\n{d}%' },
+                    labelLine: { show: true },
                 });
 
                 // 销毁现有图表
-                if (skillChart1) skillChart1.dispose();
-                if (skillChart2) skillChart2.dispose();
+                if (skillChart1) {
+                    try {
+                        skillChart1.dispose();
+                    } catch (e) {}
+                    skillChart1 = null;
+                }
+                if (skillChart2) {
+                    try {
+                        skillChart2.dispose();
+                    } catch (e) {}
+                    skillChart2 = null;
+                }
 
                 // 创建新的图表实例
                 skillChart1 = echarts.init(document.getElementById('skillDamageChart'));
@@ -693,7 +720,7 @@
                 // 技能数值分布图
                 const damageOption = {
                     title: {
-                        text: '技能数值分布',
+                        text: 'Skill Breakdown',
                         left: 'center',
                         textStyle: { color: '#e2e8f0' },
                     },
@@ -702,17 +729,17 @@
                         formatter: '{b}: {c} ({d}%)',
                         backgroundColor: 'rgba(40, 40, 60, 0.9)',
                         borderColor: '#3498db',
-                        textStyle: { color: '#ecf0f1' },
+                        textStyle: { color: '#FFFFFF' },
                     },
-                    legend: {
-                        orient: 'vertical',
-                        right: 10,
-                        top: 'center',
-                        textStyle: { color: '#cbd5e0' },
-                    },
+                    // legend: {
+                    //     orient: 'vertical',
+                    //     right: 10,
+                    //     top: 'center',
+                    //     textStyle: { color: '#cbd5e0' },
+                    // },
                     series: [
                         {
-                            name: '技能数值',
+                            name: 'Skill Stats',
                             type: 'pie',
                             radius: ['40%', '70%'],
                             avoidLabelOverlap: false,
@@ -721,30 +748,19 @@
                                 borderColor: '#1a2a6c',
                                 borderWidth: 2,
                             },
-                            label: {
-                                show: false,
-                                position: 'center',
-                            },
+                            label: { show: false, position: 'center', color: '#FFFFFF' },
                             emphasis: {
-                                label: {
-                                    show: true,
-                                    fontSize: '16',
-                                    fontWeight: 'bold',
-                                    color: '#e2e8f0',
-                                },
-                            },
-                            labelLine: {
-                                show: false,
+                                label: { show: true, fontSize: '20px' },
                             },
                             data: pieData,
                         },
                     ],
                 };
 
-                // 暴击率/幸运触发率对比图
+                // Crit Rate/Luck Rate对比图
                 const critOption = {
                     title: {
-                        text: '暴击率与幸运触发率',
+                        text: 'Crit Rate & Luck Rate',
                         left: 'center',
                         textStyle: { color: '#e2e8f0' },
                     },
@@ -756,60 +772,54 @@
                         textStyle: { color: '#ecf0f1' },
                     },
                     legend: {
-                        data: ['暴击率', '幸运触发率'],
-                        bottom: 10,
-                        textStyle: { color: '#cbd5e0' },
+                        data: ['Crit Rate', 'Luck Rate'],
+                        bottom: 6,
+                        textStyle: { color: document.body.classList.contains('dark-mode') ? '#cbd5e0' : '#333' },
                     },
                     grid: {
-                        left: '3%',
+                        left: '4%',
                         right: '4%',
-                        bottom: '15%',
-                        top: '15%',
+                        bottom: '20%',
+                        top: '14%',
                         containLabel: true,
                     },
                     xAxis: {
                         type: 'category',
-                        data: skillIds.map((id) => `${id}`), //图表技能名
+                        data: skillIds.map((id) => `${id}`),
                         axisLine: { lineStyle: { color: '#7f8c8d' } },
-                        axisLabel: {
-                            color: '#95a5a6',
-                            interval: 0,
-                            rotate: 45,
-                        },
+                        axisLabel: { color: '#95a5a6', interval: 0, rotate: 45 },
                     },
                     yAxis: {
                         type: 'value',
-                        name: '百分比',
+                        name: '%',
                         min: 0,
                         max: 100,
                         axisLine: { lineStyle: { color: '#7f8c8d' } },
                         axisLabel: { color: '#95a5a6' },
-                        splitLine: { lineStyle: { color: 'rgba(127, 140, 141, 0.2)' } },
+                        splitLine: { lineStyle: { color: 'rgba(127, 140, 141, 0.12)' } },
                     },
                     series: [
-                        {
-                            name: '暴击率',
-                            type: 'bar',
-                            data: critRates,
-                            itemStyle: { color: '#ff9966' },
-                        },
-                        {
-                            name: '幸运触发率',
-                            type: 'bar',
-                            data: luckyRates,
-                            itemStyle: { color: '#93f9b9' },
-                        },
+                        { name: 'Crit Rate', type: 'bar', data: critRates, itemStyle: { color: '#ff9966' } },
+                        { name: 'Luck Rate', type: 'bar', data: luckyRates, itemStyle: { color: '#93f9b9' } },
                     ],
                 };
 
                 skillChart1.setOption(damageOption);
                 skillChart2.setOption(critOption);
 
-                // 响应窗口大小变化
-                window.addEventListener('resize', function () {
-                    skillChart1.resize();
-                    skillChart2.resize();
-                });
+                // 单一 resize handler，避免重复绑定
+                if (window.__skill_resize_handler) {
+                    window.removeEventListener('resize', window.__skill_resize_handler);
+                }
+                window.__skill_resize_handler = function () {
+                    try {
+                        skillChart1 && skillChart1.resize();
+                    } catch (e) {}
+                    try {
+                        skillChart2 && skillChart2.resize();
+                    } catch (e) {}
+                };
+                window.addEventListener('resize', window.__skill_resize_handler);
             }
 
             // 多用户性能优化配置
@@ -1054,7 +1064,7 @@
                 const totalDps = user.total_dps || 0;
                 const totalHps = user.total_hps || 0;
 
-                // 检查暴击率和幸运率是否为NaN
+                // 检查Crit Rate和幸运率是否为NaN
                 const critRate = user.total_count?.critical / user.total_count?.total;
                 const luckyRate = user.total_count?.lucky / user.total_count?.total;
 
@@ -1067,10 +1077,10 @@
                 const btn = document.getElementById('hideInactiveBtn');
                 if (hideInactiveUsers) {
                     btn.classList.add('active');
-                    btn.innerHTML = '👀 已隐藏未参战';
+                    btn.innerHTML = '👀 Show Inactive';
                 } else {
                     btn.classList.remove('active');
-                    btn.innerHTML = '👀 隐藏未参战';
+                    btn.innerHTML = '👀 Hide Inactive';
                 }
 
                 // 重新处理当前数据
@@ -1172,11 +1182,11 @@
 
                     // 其他数据列
                     const otherCells = [
-                        user.profession || '未知',
+                        user.profession || '❓',
                         Number(user.fightPoint).toLocaleString(),
-                        (user.hp ?? '未知').toLocaleString(),
+                        (user.hp ?? '❓').toLocaleString(),
                         Number(user.taken_damage).toLocaleString(),
-                        user.dead_count ?? '未知',
+                        user.dead_count ?? '❓',
                         `${(crit_rate * 100).toFixed(2)}%`,
                         `${(lucky_rate * 100).toFixed(2)}%`,
                     ];
@@ -1260,14 +1270,14 @@
                         // 创建复制按钮
                         const copyButton = document.createElement('button');
                         copyButton.className = 'copy-btn';
-                        copyButton.innerHTML = '<i class="icon">📋</i> 复制数据';
+                        copyButton.innerHTML = '<i class="icon">📋</i> Copy Data';
                         copyButton.setAttribute('data-user-id', user.id);
                         operationDiv.appendChild(copyButton);
 
                         // 创建技能按钮
                         const skillButton = document.createElement('button');
                         skillButton.className = 'skill-btn';
-                        skillButton.innerHTML = '<i class="icon">📊</i> 技能分析';
+                        skillButton.innerHTML = '<i class="icon">📊</i> Skill Breakdown';
                         skillButton.setAttribute('data-user-id', user.id);
                         operationDiv.appendChild(skillButton);
                     }
@@ -1293,11 +1303,11 @@
 
                     // API请求成功时，如果显示的是断线状态，更新为API模式
                     if (fallbackToAPI) {
-                        showServerStatus('api-mode', '📡 API轮询模式运行中', false);
+                        showServerStatus('api-mode', '📡 API Polling Mode is running', false);
                     }
                 } catch (err) {
                     console.error('获取数据失败：', err);
-                    showServerStatus('disconnected', '❌ 无法获取服务器数据', false);
+                    showServerStatus('disconnected', '❌ Unable to obtain server data', false);
                 }
             }
 
@@ -1402,11 +1412,11 @@
 
                 if (isDarkMode) {
                     body.classList.remove('dark-mode');
-                    button.textContent = '🌙 夜间模式';
+                    button.textContent = '🌙 Dark Mode';
                     localStorage.setItem('darkMode', 'false');
                 } else {
                     body.classList.add('dark-mode');
-                    button.textContent = '☀️ 日间模式';
+                    button.textContent = '☀️ Light Mode';
                     localStorage.setItem('darkMode', 'true');
                 }
             }
@@ -1418,11 +1428,11 @@
 
                 if (isSimpleMode) {
                     body.classList.remove('simple-mode');
-                    button.textContent = '📋 简洁模式';
+                    button.textContent = '📋 Simple Mode';
                     localStorage.setItem('simpleMode', 'false');
                 } else {
                     body.classList.add('simple-mode');
-                    button.textContent = '📄 详细模式';
+                    button.textContent = '📄  Advanced Mode';
                     localStorage.setItem('simpleMode', 'true');
                 }
 
@@ -1454,7 +1464,7 @@
                             // 创建基本的HTML结构
                             pipWindow.document.write(`
                             <!DOCTYPE html>
-                            <html lang="zh-CN">
+                            <html lang="en-US">
                             <head>
                                 <meta charset="UTF-8">
                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1531,12 +1541,12 @@
                 const button = document.getElementById('pauseButton');
 
                 if (isPaused) {
-                    button.textContent = '▶️ 开始统计';
+                    button.textContent = '▶️ Start';
                     console.log('统计已暂停');
                     // 暂停时停止API轮询
                     stopAPIFallback();
                 } else {
-                    button.textContent = '⏸️ 暂停统计';
+                    button.textContent = '⏸️ Pause';
                     console.log('统计已开始');
                     // 重新开始时，如果是API模式则重新启动
                     if (fallbackToAPI) {
@@ -1570,7 +1580,7 @@
                     chartContent.style.height = '350px';
                     chartContent.style.opacity = '1';
                     toggleBtn.classList.remove('collapsed');
-                    toggleBtn.title = '隐藏图表';
+                    toggleBtn.title = 'Hide Chart';
 
                     // 重新初始化图表
                     if (!chart) {
@@ -1587,7 +1597,7 @@
                     chartContent.style.height = '0px';
                     chartContent.style.opacity = '0';
                     toggleBtn.classList.add('collapsed');
-                    toggleBtn.title = '显示图表';
+                    toggleBtn.title = 'Show Chart';
                 }
 
                 localStorage.setItem('chartVisible', isChartVisible.toString());
@@ -1601,7 +1611,7 @@
 
                 if (isDarkMode) {
                     body.classList.add('dark-mode');
-                    button.textContent = '☀️ 日间模式';
+                    button.textContent = '☀️ Light Mode';
                 }
             }
 
@@ -1612,7 +1622,7 @@
 
                 if (isSimpleMode) {
                     body.classList.add('simple-mode');
-                    button.textContent = '📄 详细模式';
+                    button.textContent = '📄 Advanced Mode';
                 }
             }
 
@@ -1685,12 +1695,12 @@
                     chartContent.style.height = '0px';
                     chartContent.style.opacity = '0';
                     toggleBtn.classList.add('collapsed');
-                    toggleBtn.title = '显示图表';
+                    toggleBtn.title = 'Show Chart';
                 } else {
                     chartContent.style.height = '350px';
                     chartContent.style.opacity = '1';
                     toggleBtn.classList.remove('collapsed');
-                    toggleBtn.title = '隐藏图表';
+                    toggleBtn.title = 'Hide Chart';
                 }
             }
 
@@ -1711,9 +1721,9 @@
                 // 更新按钮状态
                 const button = document.getElementById('pauseButton');
                 if (isPaused) {
-                    button.textContent = '▶️ 开始统计';
+                    button.textContent = '▶️ Start';
                 } else {
-                    button.textContent = '⏸️ 暂停统计';
+                    button.textContent = '⏸️ Pause';
                 }
             }
 
@@ -2263,7 +2273,7 @@
                 const statusElement = document.getElementById('chartStatus');
                 if (!statusElement) return;
 
-                statusElement.textContent = `显示 ${visibleCount}/${totalCount} 用户`;
+                statusElement.textContent = `Show ${visibleCount}/${totalCount} User`;
                 statusElement.style.color = '#666';
             }
 
@@ -2540,73 +2550,74 @@
                 const isSimpleMode = document.body.classList.contains('simple-mode');
 
                 // 基础信息组
-                const baseGroup = createColumnGroup('🔰 基础信息', [
-                    { id: 'uid', label: '角色ID', column: 'uid' },
-                    { id: 'nickname', label: '角色昵称', column: 'nickname' },
-                    { id: 'job', label: '职业', column: 'job' },
-                    { id: 'score', label: '评分', column: 'score' },
+                const baseGroup = createColumnGroup('🔰 Basic Info', [
+                    { id: 'uid', label: 'Player ID', column: 'uid' },
+                    { id: 'nickname', label: 'Player Nickname', column: 'nickname' },
+                    { id: 'job', label: 'Class', column: 'job' },
+                    { id: 'score', label: 'Ability Score', column: 'score' },
                     { id: 'hp', label: 'HP', column: 'hp' },
-                    { id: 'takenDamage', label: '承伤', column: 'takenDamage' },
-                    { id: 'deadCount', label: '死亡', column: 'deadCount' },
-                    { id: 'critRate', label: '暴击率', column: 'critRate' },
-                    { id: 'luckyRate', label: '幸运率', column: 'luckyRate' },
+                    { id: 'takenDamage', label: 'Damage Taken', column: 'takenDamage' },
+                    { id: 'deadCount', label: 'Deaths', column: 'deadCount' },
+                    { id: 'critRate', label: 'Critical Hit Rate', column: 'critRate' },
+                    { id: 'luckyRate', label: 'Lucky Hit Rate', column: 'luckyRate' },
                 ]);
+
                 content.appendChild(baseGroup);
 
                 // 根据当前数据组显示相应的列设置
                 if (currentDataGroup === 'damage' || currentDataGroup === 'all') {
-                    // 伤害数据组
-                    const damageOptions = [{ id: 'totalDamage', label: '总伤害', column: 'totalDamage' }];
+                    // Damage data group
+                    const damageOptions = [{ id: 'totalDamage', label: 'Total Damage', column: 'totalDamage' }];
 
                     if (!isSimpleMode) {
                         damageOptions.push(
-                            { id: 'pureCrit', label: '纯暴击', column: 'pureCrit' },
-                            { id: 'pureLucky', label: '纯幸运', column: 'pureLucky' },
-                            { id: 'critLucky', label: '暴击幸运', column: 'critLucky' },
+                            { id: 'pureCrit', label: 'Pure Crit', column: 'pureCrit' },
+                            { id: 'pureLucky', label: 'Pure Lucky', column: 'pureLucky' },
+                            { id: 'critLucky', label: 'Crit & Lucky', column: 'critLucky' },
                         );
                     }
 
-                    const damageGroup = createColumnGroup('⚔️ 伤害数据', damageOptions);
+                    const damageGroup = createColumnGroup('⚔️ Damage Data', damageOptions);
                     content.appendChild(damageGroup);
 
-                    // DPS数据组
-                    const dpsGroup = createColumnGroup('⚡ DPS数据', [
-                        { id: 'realtimeDps', label: '瞬时DPS', column: 'realtimeDps' },
-                        { id: 'realtimeDpsMax', label: '最大瞬时', column: 'realtimeDpsMax' },
-                        { id: 'dps', label: '总DPS', column: 'dps' },
+                    // DPS data group
+                    const dpsGroup = createColumnGroup('⚡ DPS Data', [
+                        { id: 'realtimeDps', label: 'Instant DPS', column: 'realtimeDps' },
+                        { id: 'realtimeDpsMax', label: 'Max Instant', column: 'realtimeDpsMax' },
+                        { id: 'dps', label: 'Total DPS', column: 'dps' },
                     ]);
                     content.appendChild(dpsGroup);
                 }
 
                 if (currentDataGroup === 'healing' || currentDataGroup === 'all') {
-                    // 治疗数据组
-                    const healingOptions = [{ id: 'totalHealing', label: '总治疗', column: 'totalHealing' }];
+                    // Healing data group
+                    const healingOptions = [{ id: 'totalHealing', label: 'Total Healing', column: 'totalHealing' }];
 
                     if (!isSimpleMode) {
                         healingOptions.push(
-                            { id: 'healingPureCrit', label: '纯暴击', column: 'healingPureCrit' },
-                            { id: 'healingPureLucky', label: '纯幸运', column: 'healingPureLucky' },
-                            { id: 'healingCritLucky', label: '暴击幸运', column: 'healingCritLucky' },
+                            { id: 'healingPureCrit', label: 'Pure Crit', column: 'healingPureCrit' },
+                            { id: 'healingPureLucky', label: 'Pure Lucky', column: 'healingPureLucky' },
+                            { id: 'healingCritLucky', label: 'Crit & Lucky', column: 'healingCritLucky' },
                         );
                     }
 
-                    const healingGroup = createColumnGroup('❤️ 治疗数据', healingOptions);
+                    const healingGroup = createColumnGroup('❤️ Healing Data', healingOptions);
                     content.appendChild(healingGroup);
 
-                    // HPS数据组
-                    const hpsGroup = createColumnGroup('💚 HPS数据', [
-                        { id: 'realtimeHps', label: '瞬时HPS', column: 'realtimeHps' },
-                        { id: 'realtimeHpsMax', label: '最大瞬时', column: 'realtimeHpsMax' },
-                        { id: 'hps', label: '总HPS', column: 'hps' },
+                    // HPS data group
+                    const hpsGroup = createColumnGroup('💚 HPS Data', [
+                        { id: 'realtimeHps', label: 'Instant HPS', column: 'realtimeHps' },
+                        { id: 'realtimeHpsMax', label: 'Max Instant', column: 'realtimeHpsMax' },
+                        { id: 'hps', label: 'Total HPS', column: 'hps' },
                     ]);
                     content.appendChild(hpsGroup);
                 }
 
-                // 其他组
-                const otherGroup = createColumnGroup('🔧 其他', [{ id: 'actions', label: '操作', column: 'actions' }]);
+                // Other group
+                const otherGroup = createColumnGroup('🔧 Others', [{ id: 'actions', label: 'Actions', column: 'actions' }]);
                 content.appendChild(otherGroup);
 
-                // 重新绑定事件
+                // Rebind events
                 initColumnSettings();
             }
 
@@ -3061,7 +3072,7 @@
         <div id="columnSettingsModal" class="column-settings-modal">
             <div class="column-settings-content">
                 <div class="column-settings-header">
-                    <div class="column-settings-title">⚙️ 表格设置</div>
+                    <div class="column-settings-title">⚙️ Table Settings</div>
                     <button class="close-btn" onclick="closeColumnSettings()">&times;</button>
                 </div>
 

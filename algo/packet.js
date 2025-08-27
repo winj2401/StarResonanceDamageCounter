@@ -154,27 +154,27 @@ const EDamageProperty = {
 const getProfessionNameFromId = (professionId) => {
     switch (professionId) {
         case ProfessionType.雷影剑士:
-            return '雷影剑士';
+            return 'Stormblade';
         case ProfessionType.冰魔导师:
-            return '冰魔导师';
+            return 'Frost Mage';
         case ProfessionType.涤罪恶火_战斧:
             return '涤罪恶火·战斧';
         case ProfessionType.青岚骑士:
-            return '青岚骑士';
+            return 'Wind Knight';
         case ProfessionType.森语者:
-            return '森语者';
+            return 'Verdant Oracle';
         case ProfessionType.雷霆一闪_手炮:
             return '雷霆一闪·手炮';
         case ProfessionType.巨刃守护者:
-            return '巨刃守护者';
+            return 'Heavy Guardian';
         case ProfessionType.暗灵祈舞_仪刀_仪仗:
             return '暗灵祈舞·仪刀/仪仗';
         case ProfessionType.神射手:
-            return '神射手';
+            return 'Marksman';
         case ProfessionType.神盾骑士:
-            return '神盾骑士';
+            return 'Shield Knight';
         case ProfessionType.灵魂乐手:
-            return '灵魂乐手';
+            return 'Soul Musician';
         default:
             return '';
     }
@@ -183,27 +183,27 @@ const getProfessionNameFromId = (professionId) => {
 const getDamageElement = (damageProperty) => {
     switch (damageProperty) {
         case EDamageProperty.General:
-            return '⚔️物';
+            return '⚔️Normal';
         case EDamageProperty.Fire:
-            return '🔥火';
+            return '🔥Fire';
         case EDamageProperty.Water:
-            return '❄️冰';
+            return '❄️Water';
         case EDamageProperty.Electricity:
-            return '⚡雷';
+            return '⚡Electricity';
         case EDamageProperty.Wood:
-            return '🍀森';
+            return '🍀Wood';
         case EDamageProperty.Wind:
-            return '💨风';
+            return '💨Wind';
         case EDamageProperty.Rock:
-            return '⛰️岩';
+            return '⛰️Rock';
         case EDamageProperty.Light:
-            return '🌟光';
+            return '🌟Light';
         case EDamageProperty.Dark:
-            return '🌑暗';
+            return '🌑Dark';
         case EDamageProperty.Count:
-            return '❓？'; // 未知
+            return '❓Unknown'; // 未知
         default:
-            return '⚔️物';
+            return '⚔️Normal';
     }
 };
 
