@@ -85,10 +85,11 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: github.ref_type == 'tag'
       with:
+        body: |
+          1. Download and install [npcap](https://npcap.com/dist/npcap-1.83.exe)
+          1. Download [star-resonance-damage-counter.exe](https://github.com/winj2401/StarResonanceDamageCounter/releases/latest/download/star-resonance-damage-counter.exe) and run in its own folder
+          1. Browser window should open in http://localhost:8989/ (port might be different)
         files: |
           dist/star-resonance-damage-counter.exe
-          dist/commit.txt
-          LICENSE
-          README.md
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

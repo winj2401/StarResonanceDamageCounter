@@ -47,29 +47,6 @@ function ask(question) {
 
 function getSubProfessionBySkillId(skillId) {
     switch (skillId) {
-        case 1241:
-            return 'Frostray';
-        case 2307:
-        case 2361:
-        case 55302:
-            return 'Concerto';
-        case 20301:
-            return 'Healing';
-        case 1518:
-        case 1541:
-        case 21402:
-            return 'Thornlash';
-        case 2306:
-            return 'Dissonance';
-        case 120901:
-        case 120902:
-            return 'Frostlance';
-        case 1714:
-        case 1734:
-            return 'Iaido';
-        case 44701:
-        case 179906:
-            return 'Moonblade';
         case 220112:
         case 2203622:
             return 'Falconry';
@@ -77,23 +54,46 @@ function getSubProfessionBySkillId(skillId) {
         case 1700820:
         case 1700825:
         case 1700827:
-            return 'Beastmaster';
-        case 1419:
-            return 'Aerial Style';
+            return 'Wildpack';
+        case 1714:
+        case 1734:
+            return 'Iaido';
+        case 44701:
+        case 179906:
+            return 'Moonstrike';
+        case 120901:
+        case 120902:
+            return 'Icicle';
+        case 1241:
+            return 'Frostbeam';
         case 1405:
         case 1418:
-            return 'Overdrive';
-        case 2405:
-            return 'Bulwark';
-        case 2406:
-            return 'Radiant Guard';
+            return 'Vanguard';
+        case 1419:
+            return 'Skyward';
+        case 1518:
+        case 1541:
+        case 21402:
+            return 'Smite';
+        case 20301:
+            return 'Lifebind';
         case 199902:
-            return 'Stonewall';
+            return 'Earthfort';
         case 1930:
         case 1931:
         case 1934:
         case 1935:
             return 'Block';
+        case 2406:
+            return 'Recovery';
+        case 2405:
+            return 'Shield';
+        case 2306:
+            return 'Dissonance';
+        case 2307:
+        case 2361:
+        case 55302:
+            return 'Concerto';
         default:
             return '';
     }

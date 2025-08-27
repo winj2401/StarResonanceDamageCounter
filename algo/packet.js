@@ -153,28 +153,28 @@ const EDamageProperty = {
 
 const getProfessionNameFromId = (professionId) => {
     switch (professionId) {
+        case ProfessionType.神射手:
+            return 'Marksman';
         case ProfessionType.雷影剑士:
             return 'Stormblade';
         case ProfessionType.冰魔导师:
             return 'Frost Mage';
-        case ProfessionType.涤罪恶火_战斧:
-            return '涤罪恶火·战斧';
         case ProfessionType.青岚骑士:
             return 'Wind Knight';
         case ProfessionType.森语者:
             return 'Verdant Oracle';
-        case ProfessionType.雷霆一闪_手炮:
-            return '雷霆一闪·手炮';
         case ProfessionType.巨刃守护者:
             return 'Heavy Guardian';
-        case ProfessionType.暗灵祈舞_仪刀_仪仗:
-            return '暗灵祈舞·仪刀/仪仗';
-        case ProfessionType.神射手:
-            return 'Marksman';
         case ProfessionType.神盾骑士:
             return 'Shield Knight';
         case ProfessionType.灵魂乐手:
             return 'Soul Musician';
+        case ProfessionType.涤罪恶火_战斧:
+            return '涤罪恶火·战斧';
+        case ProfessionType.雷霆一闪_手炮:
+            return '雷霆一闪·手炮';
+        case ProfessionType.暗灵祈舞_仪刀_仪仗:
+            return '暗灵祈舞·仪刀/仪仗';
         default:
             return '';
     }

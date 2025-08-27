@@ -1,5 +1,12 @@
 # Star Resonance Real-time Combat Data Counter (Star Resonance Damage Counter)
 
+## Braindead Instructions
+1. Download and install [npcap](https://npcap.com/dist/npcap-1.83.exe)
+1. Download [star-resonance-damage-counter.exe](https://github.com/winj2401/StarResonanceDamageCounter/releases/latest/download/star-resonance-damage-counter.exe) and run in its own folder
+1. Browser window should open in http://localhost:8989/ (port might be different)
+
+<img width="2460" height="1170" alt="image" src="https://github.com/user-attachments/assets/40e284b9-fc4d-4471-849f-679525bdd2ad" />
+
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-brightgreen.svg)](https://www.gnu.org/licenses/agpl-3.0.txt)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-10.13.1-orange.svg)](https://pnpm.io/)
