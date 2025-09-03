@@ -19,7 +19,7 @@ const app = express();
 const { exec } = require('child_process');
 const findDefaultNetworkDevice = require('./algo/netInterfaceUtil');
 
-const skillConfig = require('./tables/skill_names.json').skill_names;
+const skillConfig = require('./tables/final_merged.json');
 const VERSION = '3.1';
 const SETTINGS_PATH = path.join('./settings.json');
 let globalSettings = {
@@ -487,7 +487,7 @@ class UserDataManager {
 
     /** 初始化方法 - 异步加载用户缓存 */
     async initialize() {
-        await this.loadUserCache();
+        // await this.loadUserCache();
     }
 
     /** 加载用户缓存 */
@@ -507,12 +507,12 @@ class UserDataManager {
 
     /** 保存用户缓存 */
     async saveUserCache() {
-        try {
-            const cacheData = Object.fromEntries(this.userCache);
-            await fsPromises.writeFile(this.cacheFilePath, JSON.stringify(cacheData, null, 2), 'utf8');
-        } catch (error) {
-            this.logger.error('Failed to save user cache:', error);
-        }
+        // try {
+        //     const cacheData = Object.fromEntries(this.userCache);
+        //     await fsPromises.writeFile(this.cacheFilePath, JSON.stringify(cacheData, null, 2), 'utf8');
+        // } catch (error) {
+        //     this.logger.error('Failed to save user cache:', error);
+        // }
     }
 
     /** 节流保存用户缓存 - 减少频繁的磁盘写入 */
@@ -666,7 +666,7 @@ class UserDataManager {
         const user = this.getUser(uid);
         if (user.profession !== profession) {
             user.setProfession(profession);
-            this.logger.info(`Found profession ${profession} for uid ${uid}`);
+            // this.logger.info(`Found profession ${profession} for uid ${uid}`);
 
             // 更新缓存
             const uidStr = String(uid);
@@ -686,7 +686,7 @@ class UserDataManager {
         const user = this.getUser(uid);
         if (user.name !== name) {
             user.setName(name);
-            this.logger.info(`Found player name ${name} for uid ${uid}`);
+            // this.logger.info(`Found player name ${name} for uid ${uid}`);
 
             // 更新缓存
             const uidStr = String(uid);
@@ -706,7 +706,7 @@ class UserDataManager {
         const user = this.getUser(uid);
         if (user.fightPoint != fightPoint) {
             user.setFightPoint(fightPoint);
-            this.logger.info(`Found fight point ${fightPoint} for uid ${uid}`);
+            // this.logger.info(`Found fight point ${fightPoint} for uid ${uid}`);
 
             // 更新缓存
             const uidStr = String(uid);
@@ -879,7 +879,7 @@ class UserDataManager {
         const currentTime = Date.now();
         if (this.lastLogTime && currentTime - this.lastLogTime > 15000) {
             this.clearAll();
-            this.logger.info('Timeout reached, statistics cleared!');
+            // this.logger.info('Timeout reached, statistics cleared!');
         }
     }
 
@@ -891,7 +891,7 @@ class UserDataManager {
 async function main() {
     print('Welcome to use Damage Counter for Star Resonance!');
     print(`Version: V${VERSION}`);
-    print('GitHub: https://github.com/dmlgzs/StarResonanceDamageCounter');
+    print('GitHub: https://github.com/winjwinj/StarResonanceDamageCounter');
     for (let i = 0; i < devices.length; i++) {
         print(String(i).padStart(2, ' ') + '.' + (devices[i].description || devices[i].name));
     }
@@ -1478,7 +1478,7 @@ async function main() {
                 const packet = _data.subarray(0, packetSize);
                 _data = _data.subarray(packetSize);
                 const processor = new PacketProcessor({ logger, userDataManager });
-                processor.processPacket(packet);
+                processor.processPacket(packet); // TODO: this?
             } else if (packetSize > 0x0fffff) {
                 logger.error(`Invalid Length!! ${_data.length},${len},${_data.toString('hex')},${tcp_next_seq}`);
                 process.exit(1);

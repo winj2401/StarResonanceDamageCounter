@@ -237,7 +237,7 @@
                 <button id="damageGroupBtn" class="data-group-button active" onclick="toggleDataGroup('damage')">⚔️ Damage & DPS</button>
                 <button id="healingGroupBtn" class="data-group-button" onclick="toggleDataGroup('healing')">❤️ Healing & HPS</button>
                 <button id="allGroupBtn" class="data-group-button" onclick="toggleDataGroup('all')">📊 All Data</button>
-                <button id="hideInactiveBtn" class="data-group-button" onclick="toggleHideInactiveUsers()">👀 Hide Inactive</button>
+                <button id="hideInactiveBtn" class="data-group-button active" onclick="toggleHideInactiveUsers()">👀 Show Inactive</button>
                 <button class="data-group-button" onclick="openColumnSettings()">⚙️ Table Settings</button>
             </div>
             <div class="table-container">
@@ -334,7 +334,7 @@
             let lastVisiableUserArray = [];
 
             // 隐藏未参战角色相关变量
-            let hideInactiveUsers = false;
+            let hideInactiveUsers = true;
 
             // 新增技能分析功能
             let skillChart1 = null;
@@ -345,8 +345,8 @@
             let isChartVisible = true;
 
             // 版本检查相关变量
-            const CURRENT_VERSION = '3.1.1-english';
-            const GITHUB_REPO = 'winj2401/StarResonanceDamageCounter';
+            const CURRENT_VERSION = '3.1.2-english';
+            const GITHUB_REPO = 'winjwinj/StarResonanceDamageCounter';
             const UPDATE_CHECK_INTERVAL = 4 * 60 * 60 * 1000;
 
             // 从series数据中提取可见最大值

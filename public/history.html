@@ -99,7 +99,7 @@
             <button class="data-group-button active" id="damageGroupBtn" onclick="toggleDataGroup('damage')">⚔️ Damage&amp;DPS</button>
             <button class="data-group-button" id="healingGroupBtn" onclick="toggleDataGroup('healing')">❤️ Healing&amp;HPS</button>
             <button class="data-group-button" id="allGroupBtn" onclick="toggleDataGroup('all')">📊 All Data</button>
-            <button class="data-group-button" id="hideInactiveBtn" onclick="toggleHideInactiveUsers()">👀 Hide Inactive</button>
+            <button class="data-group-button active" id="hideInactiveBtn" onclick="toggleHideInactiveUsers()">👀 Show Inactive</button>
             <button class="data-group-button" onclick="openColumnSettings()">⚙️ Settings</button>
             <button class="data-group-button" onclick="downloadFightLog()">📥 Download Battle Log</button>
         </div>
@@ -161,7 +161,7 @@
             let lastVisiableUserArray = [];
 
             // 隐藏未参战角色相关变量
-            let hideInactiveUsers = false;
+            let hideInactiveUsers = true;
 
             // 新增技能分析功能
             let skillChart1 = null;
@@ -521,6 +521,7 @@
 
             // 切换隐藏未参战角色功能
             function toggleHideInactiveUsers() {
+                console.log("hihihi")
                 hideInactiveUsers = !hideInactiveUsers;
                 const btn = document.getElementById('hideInactiveBtn');
                 if (hideInactiveUsers) {
