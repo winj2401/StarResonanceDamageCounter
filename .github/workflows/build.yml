@@ -1,5 +1,4 @@
 name: Build Windows Executable with pnpm
-
 on:
   - push
   - workflow_dispatch
@@ -14,82 +13,96 @@ jobs:
       contents: read
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # 安装 Node.js
-    - name: Setup Node.js 22
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
+      # 安装 Node.js
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
 
-    # 安装 pnpm
-    - name: Install pnpm
-      run: corepack enable
+      # 安装 pnpm
+      - name: Install pnpm
+        run: corepack enable
 
-    # 缓存 pnpm store
-    - name: Cache pnpm store
-      uses: actions/cache@v4
-      with:
-        path: D:\.pnpm-store\v10
-        key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pnpm-
+      # 缓存 pnpm store
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: D:\.pnpm-store\v10
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+      # 显示 pnpm store 路径
+      - name: Show pnpm store path
+        run: pnpm store path
 
-    # 显示 pnpm store 路径
-    - name: Show pnpm store path
-      run: pnpm store path
+      # 安装依赖
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    # 安装依赖
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      # 生成 dist 目录
+      - name: Prepare dist directory
+        run: mkdir dist
 
-    # 生成 dist 目录
-    - name: Prepare dist directory
-      run: mkdir dist
+      # 获取完整 commit SHA 并写入 dist/commit.txt
+      - name: Generate commit.txt
+        run: echo ${{ github.sha }} > dist/commit.txt
 
-    # 获取完整 commit SHA 并写入 dist/commit.txt
-    - name: Generate commit.txt
-      run: echo ${{ github.sha }} > dist/commit.txt
+      # 构建 Windows EXE
+      - name: Build Windows executable
+        id: build
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF -match 'refs/tags/(.+)') {
+              $version = $matches[1]
+          } else {
+              $version = $env:GITHUB_SHA.Substring(0, 7)
+          }
+          $outputName = "star-resonance-damage-counter-$version.exe"
+          $outputPath = "dist/$outputName"
+          pnpm build `
+            --output $outputPath `
+            --options max_old_space_size=4096
+          if (Test-Path $outputPath) {
+            Write-Host "EXE generated successfully at $outputPath"
+            # Correct way to set GitHub Actions outputs in PowerShell
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "exe_name=$outputName"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$version"
+          } else {
+            Write-Error "EXE file not found!"
+            exit 1
+          }
 
-    # 构建 Windows EXE
-    - name: Build Windows executable
-      run: |
-        $outputName = "dist/star-resonance-damage-counter.exe"
-        pnpm build `
-          --output $outputName `
-          --options max_old_space_size=4096
-        if (Test-Path $outputName) {
-          Write-Host "EXE generated successfully at $outputName"
-        } else {
-          Write-Error "EXE file not found!"
-          exit 1
-        }
+      # 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StarResonanceDamageCounter-${{ steps.build.outputs.version }}
+          path: dist
 
-    # 复制 LICENSE 和 README.md
-    - name: Copy LICENSE and README.md
-      run: |
-        xcopy LICENSE dist\
-        xcopy README.md dist\
-
-    # 上传构建产物
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: StarResonanceDamageCounter
-        path: dist
-
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
-      with:
-        body: |
+      - name: Generate release notes
+        run: |
+          "# Changelog" | Out-File release_notes.txt
+          (git log -1 --pretty=%B | Select-Object -Skip 1) | Out-File release_notes.txt -Append
+          @'
+          # Braindead Instructions
           1. Download and install [npcap](https://npcap.com/dist/npcap-1.83.exe)
-          1. Download [star-resonance-damage-counter.exe](https://github.com/winj2401/StarResonanceDamageCounter/releases/latest/download/star-resonance-damage-counter.exe) and run in its own folder
+          1. Download [star-resonance-damage-counter.exe](https://github.com/winjwinj/StarResonanceDamageCounter/releases/latest/download/star-resonance-damage-counter.exe) and run in its own folder
+          
+              <sub><sup>Since it will store settings, log history, etc. in the current folder (`settings.json`, `logs`, `users.json`)</sup></sub>
           1. Browser window should open in http://localhost:8989/ (port might be different)
-        files: |
-          dist/star-resonance-damage-counter.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          '@ | Out-File release_notes.txt -Append
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          body_path: release_notes.txt
+          files: |
+            dist/${{ steps.build.outputs.exe_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
